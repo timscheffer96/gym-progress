@@ -192,6 +192,88 @@ select {
   font-weight: 700;
 }
 
+.coach-period {
+  margin: 1.5rem 0;
+  color: #3e55c7;
+  font-weight: 700;
+}
+
+.coach-overall, .coach-limits {
+  padding: 1.25rem;
+  background: #ffffff;
+  border: 1px solid #dce1ea;
+  border-radius: 0.75rem;
+}
+
+.coach-section {
+  margin-top: 2rem;
+}
+
+.coach-insights {
+  display: grid;
+  gap: 1rem;
+}
+
+.coach-insight {
+  padding: 1.25rem;
+  background: #ffffff;
+  border: 1px solid #dce1ea;
+  border-radius: 0.75rem;
+}
+
+.coach-insight-priority {
+  border-left: 4px solid #3e55c7;
+}
+
+.coach-insight h3 {
+  margin-bottom: 0.5rem;
+}
+
+.coach-numbers {
+  color: #3e55c7;
+  font-weight: 700;
+}
+
+.coach-next {
+  margin-bottom: 0.75rem;
+  font-weight: 700;
+}
+
+.coach-confidence {
+  display: inline-block;
+  margin-bottom: 0.75rem;
+  color: #566176;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.coach-insight details {
+  color: #566176;
+  line-height: 1.5;
+}
+
+.coach-insight summary {
+  color: #344054;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.coach-limits {
+  margin-top: 2rem;
+  border-left: 4px solid #e7a830;
+}
+
+.coach-limits ul {
+  margin-bottom: 0;
+  padding-left: 1.25rem;
+  color: #566176;
+  line-height: 1.5;
+}
+
+.coach-empty {
+  color: #566176;
+}
+
 h1, h2, h3, p {
   margin-top: 0;
 }

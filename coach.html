@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Coach · Gym Progress</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header>
+        <nav class="site-nav" aria-label="Main navigation">
+          <a href="index.html">Dashboard</a>
+          <a href="trends.html">Lift trends</a>
+          <a href="volume.html">Volume</a>
+          <a href="coach.html" aria-current="page">Coach</a>
+        </nav>
+        <p class="eyebrow">Strong workout analysis</p>
+        <h1>Coach</h1>
+        <p class="intro">A practical review based only on your imported training log.</p>
+      </header>
+
+      <section id="coach-no-import" class="upload-panel" hidden>
+        <h2>Import needed</h2>
+        <p class="status">Return to the <a href="index.html">Dashboard</a> and import a Strong CSV first. Your data stays in this browser.</p>
+      </section>
+
+      <section id="coach-content" hidden>
+        <p id="coach-period" class="coach-period"></p>
+        <section class="coach-overall" aria-labelledby="overall-title">
+          <h2 id="overall-title">Overall assessment</h2>
+          <p id="coach-overall-text"></p>
+        </section>
+
+        <section class="coach-section" aria-labelledby="going-well-title">
+          <h2 id="going-well-title">What’s going well</h2>
+          <div id="coach-positives" class="coach-insights"></div>
+        </section>
+
+        <section class="coach-section" aria-labelledby="next-focus-title">
+          <h2 id="next-focus-title">Your next focus</h2>
+          <div id="coach-opportunities" class="coach-insights"></div>
+        </section>
+
+        <section id="coach-limits" class="coach-limits" aria-labelledby="limits-title" hidden>
+          <h2 id="limits-title">Data limits</h2>
+          <ul id="coach-limits-list"></ul>
+        </section>
+      </section>
+    </main>
+
+    <script src="data.js"></script>
+    <script src="coach-rules.js"></script>
+    <script src="exercise-muscles.js"></script>
+    <script src="coach.js"></script>
+  </body>
+</html>

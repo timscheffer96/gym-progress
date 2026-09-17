@@ -72,6 +72,16 @@ weeks, last 6 months, last year, and all imported data.
 These quick period controls, including All time, are shared with Lift trends so
 future pages can use the same consistent period-selection behaviour.
 
+## Coach
+
+The `coach.html` page automatically reviews the latest 12 weeks ending on the
+latest imported workout date. It uses documented deterministic rules in
+`coach-rules.js` to identify supported consistency, progression, possible
+plateau, and volume patterns. It never infers a goal, planned schedule, effort,
+recovery, fatigue, injury, or a universal required volume target from the log.
+All review thresholds, sample-size requirements, and confidence cut-offs are
+centralized in `coach-rules.js` so they can be reviewed and adjusted later.
+
 ## Metric definitions
 
 In this app, **volume** means the number of logged hard sets. We assume that

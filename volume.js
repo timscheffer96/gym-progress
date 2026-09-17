@@ -37,8 +37,16 @@ function initialiseSummaryPage() {
     input.min = firstDate;
     input.max = lastDate;
   }
-  summaryEndDate.value = lastDate;
-  summaryStartDate.value = [firstDate, dateDaysBeforeSummary(lastDate, 83)].sort().at(-1);
+  const linkedDates = new URLSearchParams(window.location.search);
+  const linkedStart = linkedDates.get("start");
+  const linkedEnd = linkedDates.get("end");
+  const hasValidLinkedRange = isValidSummaryDate(linkedStart, firstDate, lastDate)
+    && isValidSummaryDate(linkedEnd, firstDate, lastDate)
+    && linkedStart <= linkedEnd;
+  summaryEndDate.value = hasValidLinkedRange ? linkedEnd : lastDate;
+  summaryStartDate.value = hasValidLinkedRange
+    ? linkedStart
+    : [firstDate, dateDaysBeforeSummary(lastDate, 83)].sort().at(-1);
   summaryStartDate.addEventListener("change", renderSummary);
   summaryEndDate.addEventListener("change", renderSummary);
   volumeMuscleSelect.addEventListener("change", renderSummary);
@@ -53,6 +61,10 @@ function initialiseSummaryPage() {
   });
   summaryContent.hidden = false;
   renderSummary();
+}
+
+function isValidSummaryDate(value, firstDate, lastDate) {
+  return Boolean(value && /^\d{4}-\d{2}-\d{2}$/.test(value) && value >= firstDate && value <= lastDate);
 }
 
 function renderSummary() {
