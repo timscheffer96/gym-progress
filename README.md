@@ -13,6 +13,13 @@ The app will import a Strong CSV export and analyse the logged sets. The
 its primary and secondary muscle groups. We will use this mapping when we add
 the CSV importer.
 
+## Importing a Strong export
+
+Open `index.html`, select a Strong CSV, and inspect the import summary. The
+file is parsed in the browser only; this first version does not upload or save
+the data. The page lists exercises that do not have an entry in
+`exercise-muscles.js`.
+
 ## Metric definitions
 
 In this app, **volume** means the number of logged hard sets. We assume that

@@ -8,10 +8,52 @@
   </head>
   <body>
     <main class="app">
-      <h1>Gym Progress</h1>
-      <p>Your workout tracker will live here.</p>
+      <header>
+        <p class="eyebrow">Strong workout analysis</p>
+        <h1>Gym Progress</h1>
+        <p class="intro">Import a Strong CSV to inspect your training data. Your file stays in this browser; it is not uploaded anywhere.</p>
+      </header>
+
+      <section class="upload-panel" aria-labelledby="upload-title">
+        <h2 id="upload-title">1. Import your Strong export</h2>
+        <label class="file-picker" for="csv-file">
+          <span>Choose Strong CSV</span>
+          <input id="csv-file" type="file" accept=".csv,text/csv" />
+        </label>
+        <p id="file-status" class="status" aria-live="polite">No file selected.</p>
+      </section>
+
+      <section id="results" class="results" hidden aria-live="polite">
+        <h2>2. Imported data</h2>
+        <div class="summary-grid">
+          <article class="metric-card"><span>Logged sets</span><strong id="set-count">0</strong></article>
+          <article class="metric-card"><span>Workouts</span><strong id="workout-count">0</strong></article>
+          <article class="metric-card"><span>Exercises</span><strong id="exercise-count">0</strong></article>
+          <article class="metric-card"><span>Unmapped exercises</span><strong id="unmapped-count">0</strong></article>
+        </div>
+
+        <section class="unmapped-panel" aria-labelledby="unmapped-title">
+          <h3 id="unmapped-title">Exercises needing a muscle mapping</h3>
+          <p id="unmapped-message">All imported exercises have a mapping.</p>
+          <ul id="unmapped-list"></ul>
+        </section>
+
+        <section aria-labelledby="sets-title">
+          <h3 id="sets-title">Imported sets</h3>
+          <p class="table-note">Showing the first 25 sets. Direct and indirect muscles come from the editable mapping file.</p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Date</th><th>Exercise</th><th>Weight</th><th>Reps</th><th>Direct muscles</th><th>Indirect muscles</th></tr>
+              </thead>
+              <tbody id="sets-table-body"></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
     </main>
 
+    <script src="exercise-muscles.js"></script>
     <script src="script.js"></script>
   </body>
 </html>
