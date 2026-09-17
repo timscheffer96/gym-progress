@@ -15,10 +15,12 @@ const volumeMuscleSelect = document.querySelector("#volume-muscle-select");
 const volumeStatSelect = document.querySelector("#volume-stat-select");
 const volumeChart = document.querySelector("#volume-chart");
 const volumeChartValue = document.querySelector("#volume-chart-value");
+const volumeLineChart = document.querySelector("#volume-line-chart");
 const comparisonMuscleSelect = document.querySelector("#comparison-muscle-select");
 const comparisonStatSelect = document.querySelector("#comparison-stat-select");
 const comparisonChart = document.querySelector("#comparison-chart");
 const comparisonChartValue = document.querySelector("#comparison-chart-value");
+const comparisonLineChart = document.querySelector("#comparison-line-chart");
 let summaryRows = [];
 let bodyMapAverages = new Map();
 let summaryPeriodPresets;
@@ -73,6 +75,7 @@ function renderSummary() {
   const periodRows = summaryRows.filter((row) => isInSummaryPeriod(row.Date, startDate, endDate));
   const volume = getMuscleVolume(periodRows);
   const weeksInPeriod = numberOfWeeksInSummaryPeriod(startDate, endDate);
+  const weeklyVolume = getWeeklyMuscleVolume(startDate, endDate);
   const prs = getEstimatedOneRmPrs(summaryRows, startDate, endDate);
   const deload = getMostRecentDeload(summaryRows, endDate);
 
@@ -82,9 +85,9 @@ function renderSummary() {
   document.querySelector("#period-week-count").textContent = numberOfWeeksInSummaryPeriod(startDate, endDate).toFixed(1);
   document.querySelector("#pr-count").textContent = prs.length;
   document.querySelector("#deload-weeks").textContent = deload ? deload.weeksSince : "—";
-  renderVolumeChart(volume, weeksInPeriod);
+  renderVolumeChart(volume, weeksInPeriod, weeklyVolume);
   renderBodyMap(volume, weeksInPeriod);
-  renderFourWeekComparison(endDate);
+  renderFourWeekComparison(startDate, endDate, weeklyVolume);
   renderPrTable(prs, startDate, endDate);
   renderDeload(deload);
 }
@@ -160,7 +163,7 @@ function getMuscleVolume(rows) {
   return volume;
 }
 
-function renderVolumeChart(volume, weeksInPeriod) {
+function renderVolumeChart(volume, weeksInPeriod, weeklyVolume) {
   const muscles = [...volume.keys()].sort();
   setMuscleOptions(volumeMuscleSelect, muscles);
   const statistic = volumeStatSelect.value;
@@ -169,9 +172,10 @@ function renderVolumeChart(volume, weeksInPeriod) {
   const selectedValue = entries.find((entry) => entry.muscle === selectedMuscle)?.value ?? 0;
   volumeChartValue.textContent = `${selectedMuscle}: ${formatSetValue(selectedValue, statistic)}`;
   renderHorizontalBarChart(volumeChart, entries, selectedMuscle, "Muscle-group volume chart");
+  renderWeeklyLineChart(volumeLineChart, getWeeklySeries(weeklyVolume, selectedMuscle, statistic), `${selectedMuscle} weekly volume trend`);
 }
 
-function renderFourWeekComparison(endDate) {
+function renderFourWeekComparison(startDate, endDate, weeklyVolume) {
   const latestStart = dateDaysBeforeSummary(endDate, 27);
   const priorEnd = dateDaysBeforeSummary(latestStart, 1);
   const priorStart = dateDaysBeforeSummary(priorEnd, 27);
@@ -188,6 +192,54 @@ function renderFourWeekComparison(endDate) {
   const change = recent - prior;
   comparisonChartValue.textContent = `${muscle}: latest ${formatSetValue(recent, statistic)} · prior ${formatSetValue(prior, statistic)} · ${change >= 0 ? "+" : ""}${formatSetValue(change, statistic)}`;
   renderComparisonBarChart(comparisonChart, prior, recent, statistic, muscle);
+  renderWeeklyLineChart(comparisonLineChart, getWeeklySeries(weeklyVolume, muscle, statistic), `${muscle} selected-period comparison trend`);
+}
+
+function getWeeklyMuscleVolume(startDate, endDate) {
+  const weeks = getSummaryWeeks(startDate, endDate);
+  const weeklyVolume = new Map(weeks.map((week) => [week, new Map()]));
+
+  for (const row of summaryRows) {
+    if (!isInSummaryPeriod(row.Date, startDate, endDate)) {
+      continue;
+    }
+    const mapping = exerciseMuscles[row["Exercise Name"].trim()];
+    const week = getWeekStartSummary(row.Date);
+    const weekVolume = weeklyVolume.get(week);
+    if (!mapping || !weekVolume) {
+      continue;
+    }
+
+    for (const muscle of mapping.primary) {
+      const counts = weekVolume.get(muscle) ?? { direct: 0, total: 0 };
+      counts.direct += 1;
+      counts.total += 1;
+      weekVolume.set(muscle, counts);
+    }
+    for (const muscle of mapping.secondary) {
+      const counts = weekVolume.get(muscle) ?? { direct: 0, total: 0 };
+      counts.total += 0.5;
+      weekVolume.set(muscle, counts);
+    }
+  }
+
+  return weeklyVolume;
+}
+
+function getSummaryWeeks(startDate, endDate) {
+  const firstWeek = getWeekStartSummary(startDate);
+  const lastWeek = getWeekStartSummary(endDate);
+  const weeks = [];
+  const cursor = new Date(`${firstWeek}T12:00:00`);
+  while (cursor.toISOString().slice(0, 10) <= lastWeek) {
+    weeks.push(cursor.toISOString().slice(0, 10));
+    cursor.setDate(cursor.getDate() + 7);
+  }
+  return weeks;
+}
+
+function getWeeklySeries(weeklyVolume, muscle, statistic) {
+  return [...weeklyVolume.entries()].map(([week, volume]) => ({ week, value: getVolumeStatistic(volume.get(muscle), 1, statistic) }));
 }
 
 function setMuscleOptions(select, muscles) {
@@ -263,6 +315,40 @@ function renderComparisonBarChart(container, prior, recent, statistic, muscle) {
   container.replaceChildren(svg);
 }
 
+function renderWeeklyLineChart(container, series, label) {
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  const width = 720;
+  const height = 220;
+  const padding = { top: 20, right: 20, bottom: 38, left: 48 };
+  const plotWidth = width - padding.left - padding.right;
+  const plotHeight = height - padding.top - padding.bottom;
+  const highest = Math.max(...series.map((point) => point.value), 1);
+  const maximum = Math.ceil(highest * 1.1);
+  svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+  svg.setAttribute("role", "img");
+  svg.setAttribute("aria-label", label);
+  appendChartSvg(svg, "line", { x1: padding.left, y1: padding.top, x2: padding.left, y2: height - padding.bottom, class: "metric-chart-axis" });
+  appendChartSvg(svg, "line", { x1: padding.left, y1: height - padding.bottom, x2: width - padding.right, y2: height - padding.bottom, class: "metric-chart-axis" });
+  appendChartSvg(svg, "text", { x: padding.left - 7, y: padding.top + 4, class: "metric-chart-value" }, maximum.toFixed(1));
+  appendChartSvg(svg, "text", { x: padding.left - 7, y: height - padding.bottom + 4, class: "metric-chart-value" }, "0");
+  appendChartSvg(svg, "text", { x: padding.left, y: height - 10, class: "metric-chart-label" }, series[0].week);
+  appendChartSvg(svg, "text", { x: width - padding.right, y: height - 10, class: "metric-chart-label", "text-anchor": "end" }, series.at(-1).week);
+
+  const coordinates = series.map((point, index) => ({
+    ...point,
+    x: padding.left + (index / Math.max(series.length - 1, 1)) * plotWidth,
+    y: padding.top + ((maximum - point.value) / maximum) * plotHeight,
+  }));
+  appendChartSvg(svg, "polyline", { points: coordinates.map(({ x, y }) => `${x},${y}`).join(" "), class: "metric-chart-line" });
+  for (const point of coordinates) {
+    const circle = appendChartSvg(svg, "circle", { cx: point.x, cy: point.y, r: 4, class: "metric-chart-point", tabindex: 0 });
+    const title = document.createElementNS("http://www.w3.org/2000/svg", "title");
+    title.textContent = `Week beginning ${point.week}: ${point.value.toFixed(1)} sets`;
+    circle.append(title);
+  }
+  container.replaceChildren(svg);
+}
+
 function appendChartSvg(svg, tagName, attributes, text = "") {
   const element = document.createElementNS("http://www.w3.org/2000/svg", tagName);
   for (const [name, value] of Object.entries(attributes)) {
@@ -270,6 +356,7 @@ function appendChartSvg(svg, tagName, attributes, text = "") {
   }
   element.textContent = text;
   svg.append(element);
+  return element;
 }
 
 function getEstimatedOneRmPrs(rows, startDate, endDate) {

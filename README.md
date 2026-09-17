@@ -64,6 +64,7 @@ page, carrying the selected Summary date range with it.
 The Summary volume and four-week comparison views use interactive charts.
 Choose a muscle group and the direct/total or total/weekly-average statistic to
 inspect; the muscle-volume chart highlights the selected group among all groups.
+Each chart also includes a weekly line trend for the selected Summary period.
 
 The Summary page includes an interactive front-and-back body map. Its colour
 intensity and hover values show average total sets per week for the selected

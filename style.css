@@ -154,6 +154,27 @@ select {
   fill: #3e55c7;
 }
 
+.weekly-chart-title {
+  margin: 1.5rem 0 0.5rem;
+}
+
+.metric-chart-axis {
+  stroke: #cdd4e0;
+  stroke-width: 1;
+}
+
+.metric-chart-line {
+  fill: none;
+  stroke: #3e55c7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 3;
+}
+
+.metric-chart-point {
+  fill: #3e55c7;
+}
+
 h1, h2, h3, p {
   margin-top: 0;
 }
