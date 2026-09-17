@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lift Trends · Gym Progress</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header>
+        <nav class="site-nav" aria-label="Main navigation">
+          <a href="index.html">Dashboard</a>
+          <a href="trends.html" aria-current="page">Lift trends</a>
+        </nav>
+        <p class="eyebrow">Strong workout analysis</p>
+        <h1>Lift trends</h1>
+        <p class="intro">Compare lift frequency and direct hard-set volume for its trained muscles across the latest 12 weeks in your import.</p>
+      </header>
+
+      <section id="no-import" class="upload-panel" hidden>
+        <h2>Import needed</h2>
+        <p class="status">Return to the <a href="index.html">dashboard</a> and import a Strong CSV first. Your import is kept only in this browser.</p>
+      </section>
+
+      <section id="trends-content" hidden>
+        <label class="select-label" for="lift-select">Choose a lift</label>
+        <select id="lift-select"></select>
+        <p id="lift-context" class="status"></p>
+
+        <div class="summary-grid">
+          <article class="metric-card"><span>Latest estimated 1RM</span><strong id="latest-one-rm">—</strong></article>
+          <article class="metric-card"><span>Lift workouts (12 weeks)</span><strong id="lift-workout-count">0</strong></article>
+          <article class="metric-card"><span>Weeks trained (12 weeks)</span><strong id="lift-week-count">0</strong></article>
+          <article class="metric-card"><span>Focus muscles</span><strong id="focus-muscle-count">0</strong></article>
+        </div>
+
+        <section class="one-rm-panel" aria-labelledby="chart-title">
+          <h2 id="chart-title">Estimated 1RM trend</h2>
+          <p>The highest Epley estimate from each week. Weeks without this lift are intentionally left blank.</p>
+          <div id="trend-chart"></div>
+        </section>
+
+        <section aria-labelledby="weekly-title">
+          <h2 id="weekly-title">Latest 12 weeks</h2>
+          <p class="table-note">Muscle volume means direct hard sets from all exercises, not just the selected lift. This lets you compare your lift trend with the direct work received by the muscles it uses.</p>
+          <div class="table-wrap">
+            <table>
+              <thead id="trend-table-head"></thead>
+              <tbody id="trend-table-body"></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script src="data.js"></script>
+    <script src="exercise-muscles.js"></script>
+    <script src="trends.js"></script>
+  </body>
+</html>

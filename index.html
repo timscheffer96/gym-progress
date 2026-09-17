@@ -9,6 +9,10 @@
   <body>
     <main class="app">
       <header>
+        <nav class="site-nav" aria-label="Main navigation">
+          <a href="index.html" aria-current="page">Dashboard</a>
+          <a href="trends.html">Lift trends</a>
+        </nav>
         <p class="eyebrow">Strong workout analysis</p>
         <h1>Gym Progress</h1>
         <p class="intro">Import a Strong CSV to inspect your training data. Your file stays in this browser; it is not uploaded anywhere.</p>
@@ -57,12 +61,6 @@
           </div>
         </section>
 
-        <section class="one-rm-panel" aria-labelledby="one-rm-title">
-          <h3 id="one-rm-title">Estimated 1RM trends</h3>
-          <p>For each workout, the chart uses the highest Epley estimate from that lift: <code>weight × (1 + reps ÷ 30)</code>.</p>
-          <div id="one-rm-charts" class="one-rm-charts"></div>
-        </section>
-
         <section aria-labelledby="sets-title">
           <h3 id="sets-title">Imported sets</h3>
           <p class="table-note">Showing the first 25 sets. Direct and indirect muscles come from the editable mapping file.</p>
@@ -78,6 +76,7 @@
       </section>
     </main>
 
+    <script src="data.js"></script>
     <script src="exercise-muscles.js"></script>
     <script src="script.js"></script>
   </body>

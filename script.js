@@ -8,13 +8,6 @@ const unmappedList = document.querySelector("#unmapped-list");
 const unmappedMessage = document.querySelector("#unmapped-message");
 const muscleSetSummary = document.querySelector("#muscle-set-summary");
 const weeklyTableBody = document.querySelector("#weekly-table-body");
-const oneRmCharts = document.querySelector("#one-rm-charts");
-
-const selectedLifts = [
-  { name: "Barbell bench press", strongName: "Bench Press (Barbell)" },
-  { name: "Barbell squat", strongName: "Squat (Barbell)" },
-  { name: "Conventional deadlift", strongName: "Deadlift (Barbell)" },
-];
 
 csvFileInput.addEventListener("change", handleFileSelection);
 
@@ -29,6 +22,7 @@ async function handleFileSelection(event) {
     fileStatus.textContent = `Reading ${file.name}…`;
     const text = await file.text();
     const rows = parseStrongCsv(text);
+    saveImportedRows(rows);
     showImport(rows, file.name);
   } catch (error) {
     results.hidden = true;
@@ -110,130 +104,8 @@ function showImport(rows, fileName) {
   showUnmappedExercises(unmappedExercises);
   showHardSetSummary(rows);
   showWeeklyHardSets(rows);
-  showOneRepMaxTrends(rows);
   showSetRows(rows.slice(0, 25));
   results.hidden = false;
-}
-
-function showOneRepMaxTrends(rows) {
-  oneRmCharts.replaceChildren();
-
-  for (const lift of selectedLifts) {
-    const points = getBestOneRepMaxes(rows, lift.strongName);
-    oneRmCharts.append(createOneRmCard(lift.name, points));
-  }
-}
-
-function getBestOneRepMaxes(rows, exerciseName) {
-  const bestByWorkout = new Map();
-
-  for (const row of rows) {
-    if (row["Exercise Name"].trim() !== exerciseName) {
-      continue;
-    }
-
-    const weight = Number(row["Weight (kg)"]);
-    const reps = Number(row.Reps);
-
-    if (!Number.isFinite(weight) || !Number.isFinite(reps) || weight <= 0 || reps <= 0) {
-      continue;
-    }
-
-    const estimate = weight * (1 + reps / 30);
-    const workoutId = row["Workout #"];
-    const currentBest = bestByWorkout.get(workoutId);
-
-    if (!currentBest || estimate > currentBest.estimate) {
-      bestByWorkout.set(workoutId, { date: row.Date.slice(0, 10), estimate });
-    }
-  }
-
-  return [...bestByWorkout.values()].sort((first, second) => first.date.localeCompare(second.date));
-}
-
-function createOneRmCard(liftName, points) {
-  const card = document.createElement("article");
-  card.className = "one-rm-card";
-  const title = document.createElement("h4");
-  title.textContent = liftName;
-  const description = document.createElement("p");
-
-  card.append(title, description);
-
-  if (points.length === 0) {
-    description.textContent = "No weight-and-rep data found for this exact Strong exercise.";
-    return card;
-  }
-
-  const latest = points.at(-1).estimate;
-  const first = points[0].estimate;
-  const change = latest - first;
-  const changeText = `${change >= 0 ? "+" : ""}${change.toFixed(1)} kg since first record`;
-  description.textContent = `Latest: ${latest.toFixed(1)} kg · ${changeText}`;
-  card.append(createLineChart(points, liftName));
-  return card;
-}
-
-function createLineChart(points, liftName) {
-  const svgNamespace = "http://www.w3.org/2000/svg";
-  const width = 520;
-  const height = 230;
-  const padding = { top: 20, right: 20, bottom: 35, left: 52 };
-  const plotWidth = width - padding.left - padding.right;
-  const plotHeight = height - padding.top - padding.bottom;
-  const estimates = points.map((point) => point.estimate);
-  const lowest = Math.min(...estimates);
-  const highest = Math.max(...estimates);
-  const rangePadding = Math.max((highest - lowest) * 0.15, 2.5);
-  const minimum = lowest - rangePadding;
-  const maximum = highest + rangePadding;
-  const range = maximum - minimum;
-  const svg = document.createElementNS(svgNamespace, "svg");
-
-  svg.classList.add("one-rm-chart");
-  svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
-  svg.setAttribute("role", "img");
-  svg.setAttribute("aria-label", `${liftName} estimated one-repetition maximum trend`);
-
-  appendSvgElement(svg, "line", { x1: padding.left, y1: padding.top, x2: padding.left, y2: height - padding.bottom, class: "chart-axis" });
-  appendSvgElement(svg, "line", { x1: padding.left, y1: height - padding.bottom, x2: width - padding.right, y2: height - padding.bottom, class: "chart-axis" });
-  appendChartLabel(svg, `${maximum.toFixed(0)} kg`, 4, padding.top + 4);
-  appendChartLabel(svg, `${minimum.toFixed(0)} kg`, 4, height - padding.bottom + 4);
-  appendChartLabel(svg, points[0].date, padding.left, height - 10, "start");
-  appendChartLabel(svg, points.at(-1).date, width - padding.right, height - 10, "end");
-
-  const coordinates = points.map((point, index) => {
-    const x = padding.left + (points.length === 1 ? plotWidth / 2 : (index / (points.length - 1)) * plotWidth);
-    const y = padding.top + ((maximum - point.estimate) / range) * plotHeight;
-    return { x, y };
-  });
-
-  appendSvgElement(svg, "polyline", { points: coordinates.map(({ x, y }) => `${x},${y}`).join(" "), class: "chart-line" });
-
-  for (const coordinate of coordinates) {
-    appendSvgElement(svg, "circle", { cx: coordinate.x, cy: coordinate.y, r: 3.5, class: "chart-point" });
-  }
-
-  return svg;
-}
-
-function appendSvgElement(svg, tagName, attributes) {
-  const element = document.createElementNS("http://www.w3.org/2000/svg", tagName);
-
-  for (const [name, value] of Object.entries(attributes)) {
-    element.setAttribute(name, value);
-  }
-  svg.append(element);
-}
-
-function appendChartLabel(svg, text, x, y, textAnchor = "start") {
-  const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
-  label.setAttribute("x", x);
-  label.setAttribute("y", y);
-  label.setAttribute("text-anchor", textAnchor);
-  label.setAttribute("class", "chart-label");
-  label.textContent = text;
-  svg.append(label);
 }
 
 function showHardSetSummary(rows) {

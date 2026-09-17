@@ -29,11 +29,15 @@ are separate measures, not pieces of one whole-body total.
 
 ## Estimated 1RM trends
 
-The dashboard displays separate trends for `Bench Press (Barbell)`, `Squat
-(Barbell)`, and `Deadlift (Barbell)`. For every workout, it uses the highest
-Epley estimate among that lift's logged sets: `weight × (1 + reps ÷ 30)`.
-`Romanian Deadlift (Barbell)` is deliberately not included in the deadlift
-trend.
+The separate `trends.html` page lets you select any imported Strong exercise.
+It displays the latest 12 calendar weeks in the export, lift-workout frequency,
+and direct hard-set volume for the selected lift's mapped primary and secondary
+muscles. It uses the highest Epley estimate in each week:
+`weight × (1 + reps ÷ 30)`.
+
+The imported rows are saved in this browser's local storage so the trends page
+can use them without another upload. They are not sent to a server or committed
+to Git.
 
 ## Metric definitions
 
