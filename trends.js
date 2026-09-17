@@ -62,7 +62,7 @@ function showLiftTrends(liftName, startDate, endDate) {
   const weeks = getWeeksForPeriod(startDate, endDate);
   const liftMetrics = getLiftWeeklyMetrics(importedRows, liftName, weeks, startDate, endDate);
   const muscleVolumes = getMuscleWeeklyVolumes(importedRows, focusMuscles, weeks, startDate, endDate);
-  const periodTotals = getPeriodTotals(liftMetrics, focusMuscles, muscleVolumes);
+  const periodTotals = getPeriodTotals(liftMetrics, focusMuscles, muscleVolumes, startDate, endDate);
 
   liftContext.textContent = mapping
     ? `Focus muscles: ${focusMuscles.join(", ")}. Direct-set totals include all exercises that directly train those muscles.`
@@ -131,10 +131,11 @@ function getMuscleWeeklyVolumes(rows, focusMuscles, weeks, startDate, endDate) {
   return volume;
 }
 
-function getPeriodTotals(liftMetrics, focusMuscles, muscleVolumes) {
+function getPeriodTotals(liftMetrics, focusMuscles, muscleVolumes, startDate, endDate) {
   const metrics = [...liftMetrics.values()];
   const estimates = metrics.map((metric) => metric.bestEstimate).filter((estimate) => estimate !== null);
   const muscleTotals = new Map(focusMuscles.map((muscle) => [muscle, 0]));
+  const weeksInPeriod = numberOfWeeksInPeriod(startDate, endDate);
 
   for (const weekVolume of muscleVolumes.values()) {
     for (const muscle of focusMuscles) {
@@ -146,7 +147,7 @@ function getPeriodTotals(liftMetrics, focusMuscles, muscleVolumes) {
     bestEstimate: estimates.length === 0 ? null : Math.max(...estimates),
     workoutCount: metrics.reduce((total, metric) => total + metric.workouts.size, 0),
     weekCount: metrics.filter((metric) => metric.workouts.size > 0).length,
-    muscleTotals,
+    averageMuscleSets: new Map(focusMuscles.map((muscle) => [muscle, muscleTotals.get(muscle) / weeksInPeriod])),
   };
 }
 
@@ -161,7 +162,7 @@ function showPeriodSummaryTable(startDate, endDate, periodTotals, focusMuscles) 
   trendTableHead.replaceChildren();
   trendTableBody.replaceChildren();
   const headerRow = document.createElement("tr");
-  const headers = ["Selected period", "Best estimated 1RM", "Lift workouts", "Weeks trained", ...focusMuscles.map((muscle) => `${muscle} direct sets`)];
+  const headers = ["Selected period", "Best estimated 1RM", "Lift workouts", "Weeks trained", ...focusMuscles.map((muscle) => `${muscle} avg. direct sets/week`)];
 
   for (const headerText of headers) {
     const header = document.createElement("th");
@@ -170,7 +171,7 @@ function showPeriodSummaryTable(startDate, endDate, periodTotals, focusMuscles) 
   }
   trendTableHead.append(headerRow);
 
-  const cells = [`${startDate} to ${endDate}`, periodTotals.bestEstimate === null ? "—" : `${periodTotals.bestEstimate.toFixed(1)} kg`, periodTotals.workoutCount, periodTotals.weekCount, ...focusMuscles.map((muscle) => periodTotals.muscleTotals.get(muscle))];
+  const cells = [`${startDate} to ${endDate}`, periodTotals.bestEstimate === null ? "—" : `${periodTotals.bestEstimate.toFixed(1)} kg`, periodTotals.workoutCount, periodTotals.weekCount, ...focusMuscles.map((muscle) => periodTotals.averageMuscleSets.get(muscle).toFixed(1))];
   const row = document.createElement("tr");
   for (const cellText of cells) {
     const cell = document.createElement("td");
@@ -219,11 +220,14 @@ function showTrendChart(liftMetrics) {
     const weekIndex = [...liftMetrics.keys()].indexOf(point.week);
     const x = padding.left + (weekIndex / Math.max(liftMetrics.size - 1, 1)) * plotWidth;
     const y = padding.top + ((maximum - point.estimate) / (maximum - minimum)) * plotHeight;
-    return { x, y };
+    return { ...point, x, y };
   });
   appendSvg(svg, "polyline", { points: coordinates.map(({ x, y }) => `${x},${y}`).join(" "), class: "chart-line" });
   for (const coordinate of coordinates) {
-    appendSvg(svg, "circle", { cx: coordinate.x, cy: coordinate.y, r: 4, class: "chart-point" });
+    const point = appendSvg(svg, "circle", { cx: coordinate.x, cy: coordinate.y, r: 5, class: "chart-point", tabindex: 0 });
+    const tooltip = document.createElementNS(svgNamespace, "title");
+    tooltip.textContent = `Week beginning ${coordinate.week}: estimated 1RM ${coordinate.estimate.toFixed(1)} kg`;
+    point.append(tooltip);
   }
   trendChart.append(svg);
 }
@@ -256,12 +260,20 @@ function dateDaysBefore(dateString, numberOfDays) {
   return date.toISOString().slice(0, 10);
 }
 
+function numberOfWeeksInPeriod(startDate, endDate) {
+  const start = new Date(`${startDate}T12:00:00`);
+  const end = new Date(`${endDate}T12:00:00`);
+  const days = Math.round((end - start) / 86_400_000) + 1;
+  return days / 7;
+}
+
 function appendSvg(svg, tagName, attributes) {
   const element = document.createElementNS("http://www.w3.org/2000/svg", tagName);
   for (const [name, value] of Object.entries(attributes)) {
     element.setAttribute(name, value);
   }
   svg.append(element);
+  return element;
 }
 
 function appendLabel(svg, text, x, y) {
