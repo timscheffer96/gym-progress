@@ -110,6 +110,72 @@ h3 {
   margin: 0 0 1.5rem;
 }
 
+.one-rm-panel {
+  margin: 2rem 0;
+}
+
+.one-rm-panel > p {
+  color: #566176;
+  line-height: 1.5;
+}
+
+.one-rm-panel code {
+  padding: 0.1rem 0.25rem;
+  background: #e9edf8;
+  border-radius: 0.25rem;
+}
+
+.one-rm-charts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+  gap: 1rem;
+}
+
+.one-rm-card {
+  padding: 1rem;
+  background: #ffffff;
+  border: 1px solid #dce1ea;
+  border-radius: 0.75rem;
+}
+
+.one-rm-card h4 {
+  margin: 0 0 0.3rem;
+}
+
+.one-rm-card p {
+  margin: 0;
+  color: #566176;
+  font-size: 0.85rem;
+}
+
+.one-rm-chart {
+  width: 100%;
+  height: auto;
+  margin-top: 0.75rem;
+}
+
+.chart-axis {
+  stroke: #cdd4e0;
+  stroke-width: 1;
+}
+
+.chart-line {
+  fill: none;
+  stroke: #3e55c7;
+  stroke-width: 3;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.chart-point {
+  fill: #3e55c7;
+}
+
+.chart-label {
+  fill: #667085;
+  font-size: 12px;
+}
+
 .hard-set-panel > p {
   color: #566176;
   line-height: 1.5;

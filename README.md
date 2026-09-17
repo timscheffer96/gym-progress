@@ -27,6 +27,14 @@ muscle mapped to an exercise. A compound movement can therefore contribute one
 set to more than one muscle group. This is intentional: muscle-group totals
 are separate measures, not pieces of one whole-body total.
 
+## Estimated 1RM trends
+
+The dashboard displays separate trends for `Bench Press (Barbell)`, `Squat
+(Barbell)`, and `Deadlift (Barbell)`. For every workout, it uses the highest
+Epley estimate among that lift's logged sets: `weight × (1 + reps ÷ 30)`.
+`Romanian Deadlift (Barbell)` is deliberately not included in the deadlift
+trend.
+
 ## Metric definitions
 
 In this app, **volume** means the number of logged hard sets. We assume that
