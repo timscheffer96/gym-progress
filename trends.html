@@ -31,6 +31,12 @@
           <label for="start-date">From <input id="start-date" type="date" /></label>
           <label for="end-date">To <input id="end-date" type="date" /></label>
         </div>
+        <div class="period-presets" aria-label="Quick period selection">
+          <button type="button" data-period="4-weeks">Last 4 weeks</button>
+          <button type="button" data-period="12-weeks">Last 12 weeks</button>
+          <button type="button" data-period="6-months">Last 6 months</button>
+          <button type="button" data-period="1-year">Last year</button>
+        </div>
         <p id="lift-context" class="status"></p>
 
         <div class="summary-grid">
@@ -60,6 +66,7 @@
     </main>
 
     <script src="data.js"></script>
+    <script src="period-presets.js"></script>
     <script src="exercise-muscles.js"></script>
     <script src="trends.js"></script>
   </body>

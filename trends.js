@@ -9,7 +9,9 @@ const trendTableHead = document.querySelector("#trend-table-head");
 const trendTableBody = document.querySelector("#trend-table-body");
 const startDateInput = document.querySelector("#start-date");
 const endDateInput = document.querySelector("#end-date");
+const trendPeriodPresetButtons = document.querySelectorAll("[data-period]");
 let importedRows = [];
+let trendPeriodPresets;
 
 initialiseTrendsPage();
 
@@ -49,6 +51,14 @@ function initialiseTrendsPage() {
   liftSelect.addEventListener("change", showSelectedTrends);
   startDateInput.addEventListener("change", showSelectedTrends);
   endDateInput.addEventListener("change", showSelectedTrends);
+  trendPeriodPresets = createPeriodPresetController({
+    buttons: trendPeriodPresetButtons,
+    startInput: startDateInput,
+    endInput: endDateInput,
+    earliestDate,
+    latestDate,
+    onPeriodChange: showSelectedTrends,
+  });
   trendsContent.hidden = false;
   showSelectedTrends();
 }
@@ -58,6 +68,7 @@ function showSelectedTrends() {
     liftContext.textContent = "The start date must be on or before the end date.";
     return;
   }
+  trendPeriodPresets?.updateButtonState();
   showLiftTrends(liftSelect.value, startDateInput.value, endDateInput.value);
 }
 

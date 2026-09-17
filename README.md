@@ -68,6 +68,9 @@ period.
 Summary also provides quick period controls for the last 4 weeks, last 12
 weeks, last 6 months, and last year of the imported data.
 
+These quick period controls are shared with Lift trends so future pages can use
+the same consistent period-selection behaviour.
+
 ## Metric definitions
 
 In this app, **volume** means the number of logged hard sets. We assume that
