@@ -53,6 +53,10 @@ indirect sets as 0.5. The deload check is a configurable heuristic: a completed
 Monday–Sunday week with logged training at or below 50% of the preceding four
 completed weeks' average direct hard-set count.
 
+The Summary four-week comparison is always available: it compares the four
+weeks ending on the selected end date with the preceding four weeks, even when
+those dates begin before the selected Summary range.
+
 The Summary muscle-volume table also displays direct and total averages per
 week. Each estimated-1RM PR links to the selected exercise on the Lift trends
 page, carrying the selected Summary date range with it.

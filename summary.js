@@ -58,7 +58,7 @@ function renderSummary() {
   document.querySelector("#pr-count").textContent = prs.length;
   document.querySelector("#deload-weeks").textContent = deload ? deload.weeksSince : "—";
   renderVolumeTable(volume, weeksInPeriod);
-  renderFourWeekComparison(startDate, endDate);
+  renderFourWeekComparison(endDate);
   renderPrTable(prs, startDate, endDate);
   renderDeload(deload);
 }
@@ -101,28 +101,22 @@ function renderVolumeTable(volume, weeksInPeriod) {
   }
 }
 
-function renderFourWeekComparison(startDate, endDate) {
+function renderFourWeekComparison(endDate) {
   comparisonTableBody.replaceChildren();
   const latestStart = dateDaysBeforeSummary(endDate, 27);
   const priorEnd = dateDaysBeforeSummary(latestStart, 1);
   const priorStart = dateDaysBeforeSummary(priorEnd, 27);
 
-  if (priorStart < startDate) {
-    comparisonDescription.textContent = "Choose a period of at least eight weeks to compare the latest four weeks with the four weeks before them.";
-    appendSummaryRow(comparisonTableBody, ["Not enough selected history", "—", "—", "—"]);
-    return;
-  }
-
   const recentVolume = getMuscleVolume(summaryRows.filter((row) => isInSummaryPeriod(row.Date, latestStart, endDate)));
   const priorVolume = getMuscleVolume(summaryRows.filter((row) => isInSummaryPeriod(row.Date, priorStart, priorEnd)));
   const muscles = [...new Set([...recentVolume.keys(), ...priorVolume.keys()])].sort((first, second) => (recentVolume.get(second)?.total ?? 0) - (recentVolume.get(first)?.total ?? 0));
-  comparisonDescription.textContent = `${latestStart} to ${endDate} compared with ${priorStart} to ${priorEnd}. Total volume is direct sets plus half of indirect sets.`;
+  comparisonDescription.textContent = `${latestStart} to ${endDate} compared with ${priorStart} to ${priorEnd}. This comparison always uses the eight weeks ending on your selected end date. Total volume is direct sets plus half of indirect sets.`;
 
   for (const muscle of muscles) {
     const recent = recentVolume.get(muscle)?.total ?? 0;
     const prior = priorVolume.get(muscle)?.total ?? 0;
     const change = recent - prior;
-    appendSummaryRow(comparisonTableBody, [muscle, recent.toFixed(1), prior.toFixed(1), `${change >= 0 ? "+" : ""}${change.toFixed(1)}`]);
+    appendSummaryRow(comparisonTableBody, [muscle, recent.toFixed(1), (recent / 4).toFixed(1), prior.toFixed(1), (prior / 4).toFixed(1), `${change >= 0 ? "+" : ""}${change.toFixed(1)}`]);
   }
 }
 
