@@ -2,3 +2,6 @@
 .DS_Store
 Thumbs.db
 .vscode/
+
+# Personal workout exports are imported locally and should not be committed.
+*.csv

@@ -6,6 +6,8 @@ const results = document.querySelector("#results");
 const setsTableBody = document.querySelector("#sets-table-body");
 const unmappedList = document.querySelector("#unmapped-list");
 const unmappedMessage = document.querySelector("#unmapped-message");
+const muscleSetSummary = document.querySelector("#muscle-set-summary");
+const weeklyTableBody = document.querySelector("#weekly-table-body");
 
 csvFileInput.addEventListener("change", handleFileSelection);
 
@@ -99,8 +101,96 @@ function showImport(rows, fileName) {
   fileStatus.textContent = `${fileName} imported successfully. Nothing was uploaded.`;
 
   showUnmappedExercises(unmappedExercises);
+  showHardSetSummary(rows);
+  showWeeklyHardSets(rows);
   showSetRows(rows.slice(0, 25));
   results.hidden = false;
+}
+
+function showHardSetSummary(rows) {
+  const directSets = new Map();
+  const indirectSets = new Map();
+
+  for (const row of rows) {
+    const mapping = exerciseMuscles[row["Exercise Name"].trim()];
+
+    if (!mapping) {
+      continue;
+    }
+
+    addSetCounts(directSets, mapping.primary);
+    addSetCounts(indirectSets, mapping.secondary);
+  }
+
+  muscleSetSummary.replaceChildren();
+
+  for (const [muscle, count] of [...directSets.entries()].sort((a, b) => b[1] - a[1])) {
+    const card = document.createElement("article");
+    card.className = "muscle-set-card";
+    const indirectCount = indirectSets.get(muscle) ?? 0;
+    card.innerHTML = `<strong>${count} direct sets</strong><span>${muscle} · ${indirectCount} indirect sets</span>`;
+    muscleSetSummary.append(card);
+  }
+}
+
+function showWeeklyHardSets(rows) {
+  const weeks = new Map();
+
+  for (const row of rows) {
+    const mapping = exerciseMuscles[row["Exercise Name"].trim()];
+    const weekStart = getWeekStart(row.Date);
+
+    if (!mapping || !weekStart) {
+      continue;
+    }
+
+    if (!weeks.has(weekStart)) {
+      weeks.set(weekStart, new Map());
+    }
+    addSetCounts(weeks.get(weekStart), mapping.primary);
+  }
+
+  weeklyTableBody.replaceChildren();
+  const recentWeeks = [...weeks.entries()].sort(([first], [second]) => second.localeCompare(first)).slice(0, 12);
+
+  for (const [weekStart, muscleCounts] of recentWeeks) {
+    const totalSets = [...muscleCounts.values()].reduce((total, count) => total + count, 0);
+    const breakdown = [...muscleCounts.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .map(([muscle, count]) => `${muscle}: ${count}`)
+      .join(" · ");
+    const tableRow = document.createElement("tr");
+
+    for (const cellText of [weekStart, totalSets, breakdown]) {
+      const cell = document.createElement("td");
+      cell.textContent = cellText;
+      tableRow.append(cell);
+    }
+
+    weeklyTableBody.append(tableRow);
+  }
+}
+
+function addSetCounts(counts, muscles) {
+  for (const muscle of muscles) {
+    counts.set(muscle, (counts.get(muscle) ?? 0) + 1);
+  }
+}
+
+function getWeekStart(dateTime) {
+  if (!dateTime) {
+    return null;
+  }
+
+  const date = new Date(`${dateTime.slice(0, 10)}T12:00:00`);
+
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  const dayOffset = (date.getDay() + 6) % 7;
+  date.setDate(date.getDate() - dayOffset);
+  return date.toISOString().slice(0, 10);
 }
 
 function showUnmappedExercises(unmappedExercises) {

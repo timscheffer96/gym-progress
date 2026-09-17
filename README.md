@@ -20,6 +20,13 @@ file is parsed in the browser only; this first version does not upload or save
 the data. The page lists exercises that do not have an entry in
 `exercise-muscles.js`.
 
+## Hard-set volume
+
+After importing, the dashboard counts one direct hard set for every primary
+muscle mapped to an exercise. A compound movement can therefore contribute one
+set to more than one muscle group. This is intentional: muscle-group totals
+are separate measures, not pieces of one whole-body total.
+
 ## Metric definitions
 
 In this app, **volume** means the number of logged hard sets. We assume that

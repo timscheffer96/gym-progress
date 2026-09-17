@@ -38,6 +38,25 @@
           <ul id="unmapped-list"></ul>
         </section>
 
+        <section class="hard-set-panel" aria-labelledby="hard-set-title">
+          <h3 id="hard-set-title">Direct hard sets by muscle group</h3>
+          <p>Every logged set counts once for each primary muscle of that exercise. Indirect sets are displayed separately.</p>
+          <div id="muscle-set-summary" class="muscle-set-summary"></div>
+        </section>
+
+        <section aria-labelledby="weekly-title">
+          <h3 id="weekly-title">Recent training weeks</h3>
+          <p class="table-note">The most recent 12 weeks in this export, grouped Monday–Sunday. Counts are direct hard sets only.</p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Week beginning</th><th>Direct hard sets</th><th>Muscle-group breakdown</th></tr>
+              </thead>
+              <tbody id="weekly-table-body"></tbody>
+            </table>
+          </div>
+        </section>
+
         <section aria-labelledby="sets-title">
           <h3 id="sets-title">Imported sets</h3>
           <p class="table-note">Showing the first 25 sets. Direct and indirect muscles come from the editable mapping file.</p>
