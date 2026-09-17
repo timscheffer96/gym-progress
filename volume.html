@@ -34,6 +34,7 @@
           <button type="button" data-period="12-weeks">Last 12 weeks</button>
           <button type="button" data-period="6-months">Last 6 months</button>
           <button type="button" data-period="1-year">Last year</button>
+          <button type="button" data-period="all-time">All time</button>
         </div>
         <p id="summary-status" class="status"></p>
 
@@ -51,8 +52,6 @@
             <label for="volume-stat-select">Show <select id="volume-stat-select">
               <option value="direct">Direct sets</option>
               <option value="total">Total sets</option>
-              <option value="direct-average">Average direct sets/week</option>
-              <option value="total-average" selected>Average total sets/week</option>
             </select></label>
           </div>
           <p id="volume-chart-value" class="chart-value" aria-live="polite"></p>
@@ -94,24 +93,6 @@
               </g>
             </svg>
           </div>
-        </section>
-
-        <section class="summary-section" aria-labelledby="comparison-title">
-          <h2 id="comparison-title">Latest 4 weeks vs. 4 weeks prior</h2>
-          <p id="comparison-description" class="table-note"></p>
-          <div class="chart-controls">
-            <label for="comparison-muscle-select">Muscle <select id="comparison-muscle-select"></select></label>
-            <label for="comparison-stat-select">Show <select id="comparison-stat-select">
-              <option value="direct">Direct sets</option>
-              <option value="total" selected>Total sets</option>
-              <option value="direct-average">Average direct sets/week</option>
-              <option value="total-average">Average total sets/week</option>
-            </select></label>
-          </div>
-          <p id="comparison-chart-value" class="chart-value" aria-live="polite"></p>
-          <h3 class="weekly-chart-title">Weekly trend in selected period</h3>
-          <div id="comparison-line-chart" class="metric-chart"></div>
-          <p id="comparison-line-tooltip" class="chart-tooltip" aria-live="polite">Hover or focus a data point to see its value.</p>
         </section>
 
         <section class="summary-section deload-section" aria-labelledby="deload-title">

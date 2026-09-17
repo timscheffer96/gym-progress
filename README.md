@@ -47,23 +47,19 @@ server or committed to Git.
 ## Volume
 
 The `volume.html` page reports sessions, direct and weighted-total muscle
-volume, a four-week volume comparison, and a deload check for a selected
-period. Weighted-total volume counts direct sets as 1 and
+volume, and a deload check for a selected period. Weighted-total volume counts
+direct sets as 1 and
 indirect sets as 0.5. The deload check is a configurable heuristic: a completed
 Monday–Sunday week with logged training at or below 50% of the preceding four
 completed weeks' average direct hard-set count.
-
-The Volume four-week comparison is always available: it compares the four
-weeks ending on the selected end date with the preceding four weeks, even when
-those dates begin before the selected Volume range.
 
 The Volume muscle metrics also display direct and total averages per week.
 Notable estimated-1RM PRs appear on Lift trends and link to the selected
 exercise chart while preserving the current date range.
 
-The Volume volume and four-week comparison views use interactive weekly line
-charts. Choose one or more muscle groups and the direct/total or weekly-average
-statistic to compare in the selected Volume period. Each selected muscle has a
+The Volume view uses an interactive weekly line chart. Choose one or more
+muscle groups and direct or total sets to compare in the selected Volume period.
+Each selected muscle has a
 different colour and every data point reveals its value on hover or focus.
 
 The Volume page includes an interactive front-and-back body map. Its colour
@@ -71,10 +67,10 @@ intensity and hover values show average total sets per week for the selected
 period.
 
 Volume also provides quick period controls for the last 4 weeks, last 12
-weeks, last 6 months, and last year of the imported data.
+weeks, last 6 months, last year, and all imported data.
 
-These quick period controls are shared with Lift trends so future pages can use
-the same consistent period-selection behaviour.
+These quick period controls, including All time, are shared with Lift trends so
+future pages can use the same consistent period-selection behaviour.
 
 ## Metric definitions
 

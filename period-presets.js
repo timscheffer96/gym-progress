@@ -5,7 +5,9 @@ function createPeriodPresetController({ buttons, startInput, endInput, earliestD
   function getPresetStartDate(preset) {
     let startDate = latestDate;
 
-    if (preset === "4-weeks") {
+    if (preset === "all-time") {
+      startDate = earliestDate;
+    } else if (preset === "4-weeks") {
       startDate = dateDaysBeforePreset(latestDate, 27);
     } else if (preset === "12-weeks") {
       startDate = dateDaysBeforePreset(latestDate, 83);

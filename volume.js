@@ -5,7 +5,6 @@ const summaryEndDate = document.querySelector("#summary-end-date");
 const summaryContent = document.querySelector("#summary-content");
 const noSummaryImport = document.querySelector("#no-import");
 const summaryStatus = document.querySelector("#summary-status");
-const comparisonDescription = document.querySelector("#comparison-description");
 const deloadDescription = document.querySelector("#deload-description");
 const bodyMap = document.querySelector("#body-map");
 const bodyMapStatus = document.querySelector("#body-map-status");
@@ -16,11 +15,6 @@ const volumeChartValue = document.querySelector("#volume-chart-value");
 const volumeLineChart = document.querySelector("#volume-line-chart");
 const volumeLineLegend = document.querySelector("#volume-line-legend");
 const volumeLineTooltip = document.querySelector("#volume-line-tooltip");
-const comparisonMuscleSelect = document.querySelector("#comparison-muscle-select");
-const comparisonStatSelect = document.querySelector("#comparison-stat-select");
-const comparisonChartValue = document.querySelector("#comparison-chart-value");
-const comparisonLineChart = document.querySelector("#comparison-line-chart");
-const comparisonLineTooltip = document.querySelector("#comparison-line-tooltip");
 let summaryRows = [];
 let bodyMapAverages = new Map();
 let summaryPeriodPresets;
@@ -49,8 +43,6 @@ function initialiseSummaryPage() {
   summaryEndDate.addEventListener("change", renderSummary);
   volumeMuscleSelect.addEventListener("change", renderSummary);
   volumeStatSelect.addEventListener("change", renderSummary);
-  comparisonMuscleSelect.addEventListener("change", renderSummary);
-  comparisonStatSelect.addEventListener("change", renderSummary);
   summaryPeriodPresets = createPeriodPresetController({
     buttons: periodPresetButtons,
     startInput: summaryStartDate,
@@ -85,7 +77,6 @@ function renderSummary() {
   document.querySelector("#deload-weeks").textContent = deload ? deload.weeksSince : "—";
   renderVolumeChart(volume, weeksInPeriod, weeklyVolume);
   renderBodyMap(volume, weeksInPeriod);
-  renderFourWeekComparison(startDate, endDate, weeklyVolume);
   renderDeload(deload);
 }
 
@@ -176,25 +167,6 @@ function renderVolumeChart(volume, weeksInPeriod, weeklyVolume) {
   renderWeeklyLineChart(volumeLineChart, series, "Selected muscle weekly volume trend", volumeLineTooltip, statistic);
 }
 
-function renderFourWeekComparison(startDate, endDate, weeklyVolume) {
-  const latestStart = dateDaysBeforeSummary(endDate, 27);
-  const priorEnd = dateDaysBeforeSummary(latestStart, 1);
-  const priorStart = dateDaysBeforeSummary(priorEnd, 27);
-
-  const recentVolume = getMuscleVolume(summaryRows.filter((row) => isInSummaryPeriod(row.Date, latestStart, endDate)));
-  const priorVolume = getMuscleVolume(summaryRows.filter((row) => isInSummaryPeriod(row.Date, priorStart, priorEnd)));
-  const muscles = [...new Set([...recentVolume.keys(), ...priorVolume.keys()])].sort();
-  comparisonDescription.textContent = `${latestStart} to ${endDate} compared with ${priorStart} to ${priorEnd}. This comparison always uses the eight weeks ending on your selected end date. Total volume is direct sets plus half of indirect sets.`;
-  setMuscleOptions(comparisonMuscleSelect, muscles);
-  const muscle = comparisonMuscleSelect.value;
-  const statistic = comparisonStatSelect.value;
-  const prior = getVolumeStatistic(priorVolume.get(muscle), 4, statistic);
-  const recent = getVolumeStatistic(recentVolume.get(muscle), 4, statistic);
-  const change = recent - prior;
-  comparisonChartValue.textContent = `${muscle}: latest ${formatSetValue(recent, statistic)} · prior ${formatSetValue(prior, statistic)} · ${change >= 0 ? "+" : ""}${formatSetValue(change, statistic)}`;
-  renderWeeklyLineChart(comparisonLineChart, [{ name: muscle, points: getWeeklySeries(weeklyVolume, muscle, statistic) }], `${muscle} selected-period comparison trend`, comparisonLineTooltip, statistic);
-}
-
 function getWeeklyMuscleVolume(startDate, endDate) {
   const weeks = getSummaryWeeks(startDate, endDate);
   const weeklyVolume = new Map(weeks.map((week) => [week, new Map()]));
@@ -275,12 +247,11 @@ function getVolumeStatistic(counts, weeks, statistic) {
   const total = counts?.total ?? 0;
   if (statistic === "direct") return direct;
   if (statistic === "total") return total;
-  if (statistic === "direct-average") return direct / weeks;
-  return total / weeks;
+  return total;
 }
 
 function formatSetValue(value, statistic) {
-  return statistic.endsWith("average") ? `${value.toFixed(1)} sets/week` : `${value.toFixed(1)} sets`;
+  return `${value.toFixed(1)} sets`;
 }
 
 function renderWeeklyLineChart(container, series, label, tooltipElement, statistic) {
@@ -310,7 +281,8 @@ function renderWeeklyLineChart(container, series, label, tooltipElement, statist
       x: padding.left + (index / Math.max(line.points.length - 1, 1)) * plotWidth,
       y: padding.top + ((maximum - point.value) / maximum) * plotHeight,
     }));
-    appendChartSvg(svg, "polyline", { points: coordinates.map(({ x, y }) => `${x},${y}`).join(" "), class: "metric-chart-line", stroke: color });
+    const linePath = appendChartSvg(svg, "polyline", { points: coordinates.map(({ x, y }) => `${x},${y}`).join(" "), class: "metric-chart-line" });
+    linePath.style.stroke = color;
     for (const point of coordinates) {
       const circle = appendChartSvg(svg, "circle", { cx: point.x, cy: point.y, r: 4, fill: color, tabindex: 0 });
       const pointText = `${line.name} · week beginning ${point.week}: ${formatSetValue(point.value, statistic)}`;
