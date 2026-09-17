@@ -34,13 +34,18 @@ function initialiseTrendsPage() {
   }
 
   const defaultLift = exerciseNames.includes("Bench Press (Barbell)") ? "Bench Press (Barbell)" : exerciseNames[0];
-  liftSelect.value = defaultLift;
+  const sharedLink = new URLSearchParams(window.location.search);
+  const linkedLift = sharedLink.get("lift");
+  liftSelect.value = exerciseNames.includes(linkedLift) ? linkedLift : defaultLift;
   startDateInput.min = earliestDate;
   startDateInput.max = latestDate;
   endDateInput.min = earliestDate;
   endDateInput.max = latestDate;
-  endDateInput.value = latestDate;
-  startDateInput.value = [earliestDate, dateDaysBefore(latestDate, 83)].sort().at(-1);
+  endDateInput.value = validLinkedDate(sharedLink.get("end"), earliestDate, latestDate) ?? latestDate;
+  startDateInput.value = validLinkedDate(sharedLink.get("start"), earliestDate, latestDate) ?? [earliestDate, dateDaysBefore(latestDate, 83)].sort().at(-1);
+  if (startDateInput.value > endDateInput.value) {
+    startDateInput.value = [earliestDate, dateDaysBefore(endDateInput.value, 83)].sort().at(-1);
+  }
   liftSelect.addEventListener("change", showSelectedTrends);
   startDateInput.addEventListener("change", showSelectedTrends);
   endDateInput.addEventListener("change", showSelectedTrends);
@@ -258,6 +263,10 @@ function dateDaysBefore(dateString, numberOfDays) {
   const date = new Date(`${dateString}T12:00:00`);
   date.setDate(date.getDate() - numberOfDays);
   return date.toISOString().slice(0, 10);
+}
+
+function validLinkedDate(value, earliestDate, latestDate) {
+  return value && value >= earliestDate && value <= latestDate ? value : null;
 }
 
 function numberOfWeeksInPeriod(startDate, endDate) {

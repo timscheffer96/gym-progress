@@ -48,6 +48,7 @@ function renderSummary() {
 
   const periodRows = summaryRows.filter((row) => isInSummaryPeriod(row.Date, startDate, endDate));
   const volume = getMuscleVolume(periodRows);
+  const weeksInPeriod = numberOfWeeksInSummaryPeriod(startDate, endDate);
   const prs = getEstimatedOneRmPrs(summaryRows, startDate, endDate);
   const deload = getMostRecentDeload(summaryRows, endDate);
 
@@ -56,9 +57,9 @@ function renderSummary() {
   document.querySelector("#period-week-count").textContent = numberOfWeeksInSummaryPeriod(startDate, endDate).toFixed(1);
   document.querySelector("#pr-count").textContent = prs.length;
   document.querySelector("#deload-weeks").textContent = deload ? deload.weeksSince : "—";
-  renderVolumeTable(volume);
+  renderVolumeTable(volume, weeksInPeriod);
   renderFourWeekComparison(startDate, endDate);
-  renderPrTable(prs);
+  renderPrTable(prs, startDate, endDate);
   renderDeload(deload);
 }
 
@@ -91,12 +92,12 @@ function getMuscleVolume(rows) {
   return volume;
 }
 
-function renderVolumeTable(volume) {
+function renderVolumeTable(volume, weeksInPeriod) {
   volumeTableBody.replaceChildren();
   const entries = [...volume.entries()].sort(([, first], [, second]) => second.total - first.total);
 
   for (const [muscle, counts] of entries) {
-    appendSummaryRow(volumeTableBody, [muscle, counts.direct, counts.total.toFixed(1)]);
+    appendSummaryRow(volumeTableBody, [muscle, counts.direct, counts.total.toFixed(1), (counts.direct / weeksInPeriod).toFixed(1), (counts.total / weeksInPeriod).toFixed(1)]);
   }
 }
 
@@ -154,7 +155,7 @@ function getEstimatedOneRmPrs(rows, startDate, endDate) {
     .slice(0, 10);
 }
 
-function renderPrTable(prs) {
+function renderPrTable(prs, startDate, endDate) {
   prTableBody.replaceChildren();
   if (prs.length === 0) {
     appendSummaryRow(prTableBody, ["No estimated-1RM PRs in this period", "—", "—", "—", "—"]);
@@ -162,7 +163,24 @@ function renderPrTable(prs) {
   }
 
   for (const pr of prs) {
-    appendSummaryRow(prTableBody, [pr.exercise, pr.date, `${pr.estimate.toFixed(1)} kg`, `${pr.previous.toFixed(1)} kg`, `+${pr.improvement.toFixed(1)} kg`]);
+    const row = document.createElement("tr");
+    const exerciseCell = document.createElement("td");
+    const liftLink = document.createElement("a");
+    const trendUrl = new URL("trends.html", window.location.href);
+    trendUrl.searchParams.set("lift", pr.exercise);
+    trendUrl.searchParams.set("start", startDate);
+    trendUrl.searchParams.set("end", endDate);
+    liftLink.href = trendUrl.toString();
+    liftLink.textContent = pr.exercise;
+    exerciseCell.append(liftLink);
+    row.append(exerciseCell);
+
+    for (const value of [pr.date, `${pr.estimate.toFixed(1)} kg`, `${pr.previous.toFixed(1)} kg`, `+${pr.improvement.toFixed(1)} kg`]) {
+      const cell = document.createElement("td");
+      cell.textContent = value;
+      row.append(cell);
+    }
+    prTableBody.append(row);
   }
 }
 
