@@ -6,7 +6,6 @@ const summaryContent = document.querySelector("#summary-content");
 const noSummaryImport = document.querySelector("#no-import");
 const summaryStatus = document.querySelector("#summary-status");
 const comparisonDescription = document.querySelector("#comparison-description");
-const prTableBody = document.querySelector("#pr-table-body");
 const deloadDescription = document.querySelector("#deload-description");
 const bodyMap = document.querySelector("#body-map");
 const bodyMapStatus = document.querySelector("#body-map-status");
@@ -74,19 +73,16 @@ function renderSummary() {
   const volume = getMuscleVolume(periodRows);
   const weeksInPeriod = numberOfWeeksInSummaryPeriod(startDate, endDate);
   const weeklyVolume = getWeeklyMuscleVolume(startDate, endDate);
-  const prs = getEstimatedOneRmPrs(summaryRows, startDate, endDate);
   const deload = getMostRecentDeload(summaryRows, endDate);
 
   summaryStatus.textContent = `${startDate} to ${endDate}`;
   summaryPeriodPresets?.updateButtonState();
   document.querySelector("#session-count").textContent = getSessionCount(periodRows);
   document.querySelector("#period-week-count").textContent = numberOfWeeksInSummaryPeriod(startDate, endDate).toFixed(1);
-  document.querySelector("#pr-count").textContent = prs.length;
   document.querySelector("#deload-weeks").textContent = deload ? deload.weeksSince : "—";
   renderVolumeChart(volume, weeksInPeriod, weeklyVolume);
   renderBodyMap(volume, weeksInPeriod);
   renderFourWeekComparison(startDate, endDate, weeklyVolume);
-  renderPrTable(prs, startDate, endDate);
   renderDeload(deload);
 }
 
@@ -305,64 +301,6 @@ function appendChartSvg(svg, tagName, attributes, text = "") {
   element.textContent = text;
   svg.append(element);
   return element;
-}
-
-function getEstimatedOneRmPrs(rows, startDate, endDate) {
-  const priorBest = new Map();
-  const periodBest = new Map();
-
-  for (const row of rows) {
-    const estimate = estimateOneRm(row);
-    if (estimate === null) {
-      continue;
-    }
-    const exercise = row["Exercise Name"].trim();
-    const date = row.Date.slice(0, 10);
-
-    if (date < startDate) {
-      priorBest.set(exercise, Math.max(priorBest.get(exercise) ?? 0, estimate));
-    } else if (date <= endDate) {
-      const current = periodBest.get(exercise);
-      if (!current || estimate > current.estimate) {
-        periodBest.set(exercise, { date, estimate });
-      }
-    }
-  }
-
-  return [...periodBest.entries()]
-    .filter(([exercise, result]) => priorBest.has(exercise) && result.estimate > priorBest.get(exercise))
-    .map(([exercise, result]) => ({ exercise, ...result, previous: priorBest.get(exercise), improvement: result.estimate - priorBest.get(exercise) }))
-    .sort((first, second) => second.improvement - first.improvement)
-    .slice(0, 10);
-}
-
-function renderPrTable(prs, startDate, endDate) {
-  prTableBody.replaceChildren();
-  if (prs.length === 0) {
-    appendSummaryRow(prTableBody, ["No estimated-1RM PRs in this period", "—", "—", "—", "—"]);
-    return;
-  }
-
-  for (const pr of prs) {
-    const row = document.createElement("tr");
-    const exerciseCell = document.createElement("td");
-    const liftLink = document.createElement("a");
-    const trendUrl = new URL("trends.html", window.location.href);
-    trendUrl.searchParams.set("lift", pr.exercise);
-    trendUrl.searchParams.set("start", startDate);
-    trendUrl.searchParams.set("end", endDate);
-    liftLink.href = trendUrl.toString();
-    liftLink.textContent = pr.exercise;
-    exerciseCell.append(liftLink);
-    row.append(exerciseCell);
-
-    for (const value of [pr.date, `${pr.estimate.toFixed(1)} kg`, `${pr.previous.toFixed(1)} kg`, `+${pr.improvement.toFixed(1)} kg`]) {
-      const cell = document.createElement("td");
-      cell.textContent = value;
-      row.append(cell);
-    }
-    prTableBody.append(row);
-  }
 }
 
 function getMostRecentDeload(rows, endDate) {

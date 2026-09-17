@@ -7,6 +7,7 @@ const liftContext = document.querySelector("#lift-context");
 const trendChart = document.querySelector("#trend-chart");
 const trendTableHead = document.querySelector("#trend-table-head");
 const trendTableBody = document.querySelector("#trend-table-body");
+const trendPrTableBody = document.querySelector("#trend-pr-table-body");
 const startDateInput = document.querySelector("#start-date");
 const endDateInput = document.querySelector("#end-date");
 const trendPeriodPresetButtons = document.querySelectorAll("[data-period]");
@@ -87,6 +88,75 @@ function showLiftTrends(liftName, startDate, endDate) {
   showTrendSummary(periodTotals, focusMuscles.length);
   showTrendChart(liftMetrics);
   showPeriodSummaryTable(startDate, endDate, periodTotals, focusMuscles);
+  showTrendPrTable(getTrendPrs(importedRows, startDate, endDate), startDate, endDate);
+}
+
+function getTrendPrs(rows, startDate, endDate) {
+  const priorBest = new Map();
+  const periodBest = new Map();
+
+  for (const row of rows) {
+    const estimate = estimateOneRepMax(row);
+    if (estimate === null) {
+      continue;
+    }
+    const exercise = row["Exercise Name"].trim();
+    const date = row.Date.slice(0, 10);
+
+    if (date < startDate) {
+      priorBest.set(exercise, Math.max(priorBest.get(exercise) ?? 0, estimate));
+    } else if (date <= endDate) {
+      const current = periodBest.get(exercise);
+      if (!current || estimate > current.estimate) {
+        periodBest.set(exercise, { date, estimate });
+      }
+    }
+  }
+
+  return [...periodBest.entries()]
+    .filter(([exercise, result]) => priorBest.has(exercise) && result.estimate > priorBest.get(exercise))
+    .map(([exercise, result]) => ({ exercise, ...result, previous: priorBest.get(exercise), improvement: result.estimate - priorBest.get(exercise) }))
+    .sort((first, second) => second.improvement - first.improvement)
+    .slice(0, 10);
+}
+
+function showTrendPrTable(prs, startDate, endDate) {
+  trendPrTableBody.replaceChildren();
+  if (prs.length === 0) {
+    appendTrendPrRow(["No estimated-1RM PRs in this period", "—", "—", "—", "—"]);
+    return;
+  }
+
+  for (const pr of prs) {
+    const row = document.createElement("tr");
+    const exerciseCell = document.createElement("td");
+    const liftLink = document.createElement("a");
+    const trendUrl = new URL("trends.html", window.location.href);
+    trendUrl.searchParams.set("lift", pr.exercise);
+    trendUrl.searchParams.set("start", startDate);
+    trendUrl.searchParams.set("end", endDate);
+    liftLink.href = trendUrl.toString();
+    liftLink.textContent = pr.exercise;
+    exerciseCell.append(liftLink);
+    row.append(exerciseCell);
+
+    for (const value of [pr.date, `${pr.estimate.toFixed(1)} kg`, `${pr.previous.toFixed(1)} kg`, `+${pr.improvement.toFixed(1)} kg`]) {
+      const cell = document.createElement("td");
+      cell.textContent = value;
+      row.append(cell);
+    }
+    trendPrTableBody.append(row);
+  }
+}
+
+function appendTrendPrRow(values) {
+  const row = document.createElement("tr");
+  for (const value of values) {
+    const cell = document.createElement("td");
+    cell.textContent = value;
+    row.append(cell);
+  }
+  trendPrTableBody.append(row);
 }
 
 function getWeeksForPeriod(startDate, endDate) {

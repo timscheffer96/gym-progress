@@ -12,7 +12,7 @@
         <nav class="site-nav" aria-label="Main navigation">
           <a href="index.html">Dashboard</a>
           <a href="trends.html" aria-current="page">Lift trends</a>
-          <a href="summary.html">Summary</a>
+          <a href="volume.html">Volume</a>
         </nav>
         <p class="eyebrow">Strong workout analysis</p>
         <h1>Lift trends</h1>
@@ -59,6 +59,17 @@
             <table>
               <thead id="trend-table-head"></thead>
               <tbody id="trend-table-body"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="summary-section" aria-labelledby="pr-title">
+          <h2 id="pr-title">Notable estimated-1RM PRs</h2>
+          <p class="table-note">The 10 largest estimated-1RM improvements in the selected period compared with an earlier record for the same exercise. Select an exercise name to view its chart.</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Exercise</th><th>Date</th><th>New estimate</th><th>Previous best</th><th>Improvement</th></tr></thead>
+              <tbody id="trend-pr-table-body"></tbody>
             </table>
           </div>
         </section>

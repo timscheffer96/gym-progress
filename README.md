@@ -44,32 +44,32 @@ The imported rows are saved in this browser's local storage so the trends page
 and Dashboard can use them without another upload. They are not sent to a
 server or committed to Git.
 
-## Summary
+## Volume
 
-The `summary.html` page reports sessions, direct and weighted-total muscle
-volume, a four-week volume comparison, estimated-1RM PRs, and a deload check
-for a selected period. Weighted-total volume counts direct sets as 1 and
+The `volume.html` page reports sessions, direct and weighted-total muscle
+volume, a four-week volume comparison, and a deload check for a selected
+period. Weighted-total volume counts direct sets as 1 and
 indirect sets as 0.5. The deload check is a configurable heuristic: a completed
 Monday–Sunday week with logged training at or below 50% of the preceding four
 completed weeks' average direct hard-set count.
 
-The Summary four-week comparison is always available: it compares the four
+The Volume four-week comparison is always available: it compares the four
 weeks ending on the selected end date with the preceding four weeks, even when
-those dates begin before the selected Summary range.
+those dates begin before the selected Volume range.
 
-The Summary muscle-volume table also displays direct and total averages per
-week. Each estimated-1RM PR links to the selected exercise on the Lift trends
-page, carrying the selected Summary date range with it.
+The Volume muscle metrics also display direct and total averages per week.
+Notable estimated-1RM PRs appear on Lift trends and link to the selected
+exercise chart while preserving the current date range.
 
-The Summary volume and four-week comparison views use interactive weekly line
+The Volume volume and four-week comparison views use interactive weekly line
 charts. Choose a muscle group and the direct/total or weekly-average statistic
-to inspect for the selected Summary period.
+to inspect for the selected Volume period.
 
-The Summary page includes an interactive front-and-back body map. Its colour
+The Volume page includes an interactive front-and-back body map. Its colour
 intensity and hover values show average total sets per week for the selected
 period.
 
-Summary also provides quick period controls for the last 4 weeks, last 12
+Volume also provides quick period controls for the last 4 weeks, last 12
 weeks, last 6 months, and last year of the imported data.
 
 These quick period controls are shared with Lift trends so future pages can use
