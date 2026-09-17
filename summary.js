@@ -5,14 +5,20 @@ const summaryEndDate = document.querySelector("#summary-end-date");
 const summaryContent = document.querySelector("#summary-content");
 const noSummaryImport = document.querySelector("#no-import");
 const summaryStatus = document.querySelector("#summary-status");
-const volumeTableBody = document.querySelector("#volume-table-body");
-const comparisonTableBody = document.querySelector("#comparison-table-body");
 const comparisonDescription = document.querySelector("#comparison-description");
 const prTableBody = document.querySelector("#pr-table-body");
 const deloadDescription = document.querySelector("#deload-description");
 const bodyMap = document.querySelector("#body-map");
 const bodyMapStatus = document.querySelector("#body-map-status");
 const periodPresetButtons = document.querySelectorAll("[data-period]");
+const volumeMuscleSelect = document.querySelector("#volume-muscle-select");
+const volumeStatSelect = document.querySelector("#volume-stat-select");
+const volumeChart = document.querySelector("#volume-chart");
+const volumeChartValue = document.querySelector("#volume-chart-value");
+const comparisonMuscleSelect = document.querySelector("#comparison-muscle-select");
+const comparisonStatSelect = document.querySelector("#comparison-stat-select");
+const comparisonChart = document.querySelector("#comparison-chart");
+const comparisonChartValue = document.querySelector("#comparison-chart-value");
 let summaryRows = [];
 let bodyMapAverages = new Map();
 let summaryPeriodPresets;
@@ -39,6 +45,10 @@ function initialiseSummaryPage() {
   summaryStartDate.value = [firstDate, dateDaysBeforeSummary(lastDate, 83)].sort().at(-1);
   summaryStartDate.addEventListener("change", renderSummary);
   summaryEndDate.addEventListener("change", renderSummary);
+  volumeMuscleSelect.addEventListener("change", renderSummary);
+  volumeStatSelect.addEventListener("change", renderSummary);
+  comparisonMuscleSelect.addEventListener("change", renderSummary);
+  comparisonStatSelect.addEventListener("change", renderSummary);
   summaryPeriodPresets = createPeriodPresetController({
     buttons: periodPresetButtons,
     startInput: summaryStartDate,
@@ -72,7 +82,7 @@ function renderSummary() {
   document.querySelector("#period-week-count").textContent = numberOfWeeksInSummaryPeriod(startDate, endDate).toFixed(1);
   document.querySelector("#pr-count").textContent = prs.length;
   document.querySelector("#deload-weeks").textContent = deload ? deload.weeksSince : "—";
-  renderVolumeTable(volume, weeksInPeriod);
+  renderVolumeChart(volume, weeksInPeriod);
   renderBodyMap(volume, weeksInPeriod);
   renderFourWeekComparison(endDate);
   renderPrTable(prs, startDate, endDate);
@@ -150,32 +160,116 @@ function getMuscleVolume(rows) {
   return volume;
 }
 
-function renderVolumeTable(volume, weeksInPeriod) {
-  volumeTableBody.replaceChildren();
-  const entries = [...volume.entries()].sort(([, first], [, second]) => second.total - first.total);
-
-  for (const [muscle, counts] of entries) {
-    appendSummaryRow(volumeTableBody, [muscle, counts.direct, counts.total.toFixed(1), (counts.direct / weeksInPeriod).toFixed(1), (counts.total / weeksInPeriod).toFixed(1)]);
-  }
+function renderVolumeChart(volume, weeksInPeriod) {
+  const muscles = [...volume.keys()].sort();
+  setMuscleOptions(volumeMuscleSelect, muscles);
+  const statistic = volumeStatSelect.value;
+  const selectedMuscle = volumeMuscleSelect.value;
+  const entries = muscles.map((muscle) => ({ muscle, value: getVolumeStatistic(volume.get(muscle), weeksInPeriod, statistic) }));
+  const selectedValue = entries.find((entry) => entry.muscle === selectedMuscle)?.value ?? 0;
+  volumeChartValue.textContent = `${selectedMuscle}: ${formatSetValue(selectedValue, statistic)}`;
+  renderHorizontalBarChart(volumeChart, entries, selectedMuscle, "Muscle-group volume chart");
 }
 
 function renderFourWeekComparison(endDate) {
-  comparisonTableBody.replaceChildren();
   const latestStart = dateDaysBeforeSummary(endDate, 27);
   const priorEnd = dateDaysBeforeSummary(latestStart, 1);
   const priorStart = dateDaysBeforeSummary(priorEnd, 27);
 
   const recentVolume = getMuscleVolume(summaryRows.filter((row) => isInSummaryPeriod(row.Date, latestStart, endDate)));
   const priorVolume = getMuscleVolume(summaryRows.filter((row) => isInSummaryPeriod(row.Date, priorStart, priorEnd)));
-  const muscles = [...new Set([...recentVolume.keys(), ...priorVolume.keys()])].sort((first, second) => (recentVolume.get(second)?.total ?? 0) - (recentVolume.get(first)?.total ?? 0));
+  const muscles = [...new Set([...recentVolume.keys(), ...priorVolume.keys()])].sort();
   comparisonDescription.textContent = `${latestStart} to ${endDate} compared with ${priorStart} to ${priorEnd}. This comparison always uses the eight weeks ending on your selected end date. Total volume is direct sets plus half of indirect sets.`;
+  setMuscleOptions(comparisonMuscleSelect, muscles);
+  const muscle = comparisonMuscleSelect.value;
+  const statistic = comparisonStatSelect.value;
+  const prior = getVolumeStatistic(priorVolume.get(muscle), 4, statistic);
+  const recent = getVolumeStatistic(recentVolume.get(muscle), 4, statistic);
+  const change = recent - prior;
+  comparisonChartValue.textContent = `${muscle}: latest ${formatSetValue(recent, statistic)} · prior ${formatSetValue(prior, statistic)} · ${change >= 0 ? "+" : ""}${formatSetValue(change, statistic)}`;
+  renderComparisonBarChart(comparisonChart, prior, recent, statistic, muscle);
+}
 
+function setMuscleOptions(select, muscles) {
+  const previousValue = select.value;
+  select.replaceChildren();
   for (const muscle of muscles) {
-    const recent = recentVolume.get(muscle)?.total ?? 0;
-    const prior = priorVolume.get(muscle)?.total ?? 0;
-    const change = recent - prior;
-    appendSummaryRow(comparisonTableBody, [muscle, recent.toFixed(1), (recent / 4).toFixed(1), prior.toFixed(1), (prior / 4).toFixed(1), `${change >= 0 ? "+" : ""}${change.toFixed(1)}`]);
+    const option = document.createElement("option");
+    option.value = muscle;
+    option.textContent = muscle;
+    select.append(option);
   }
+  select.value = muscles.includes(previousValue) ? previousValue : muscles.includes("chest") ? "chest" : muscles[0];
+}
+
+function getVolumeStatistic(counts, weeks, statistic) {
+  const direct = counts?.direct ?? 0;
+  const total = counts?.total ?? 0;
+  if (statistic === "direct") return direct;
+  if (statistic === "total") return total;
+  if (statistic === "direct-average") return direct / weeks;
+  return total / weeks;
+}
+
+function formatSetValue(value, statistic) {
+  return statistic.endsWith("average") ? `${value.toFixed(1)} sets/week` : `${value.toFixed(1)} sets`;
+}
+
+function renderHorizontalBarChart(container, entries, selectedMuscle, label) {
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  const width = 720;
+  const rowHeight = 30;
+  const height = Math.max(100, entries.length * rowHeight + 24);
+  const labelWidth = 130;
+  const valueWidth = 78;
+  const barWidth = width - labelWidth - valueWidth - 20;
+  const maximum = Math.max(...entries.map((entry) => entry.value), 1);
+  svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+  svg.setAttribute("role", "img");
+  svg.setAttribute("aria-label", label);
+
+  entries.forEach((entry, index) => {
+    const y = 12 + index * rowHeight;
+    appendChartSvg(svg, "text", { x: labelWidth - 10, y: y + 15, class: "metric-chart-label", "text-anchor": "end" }, entry.muscle);
+    appendChartSvg(svg, "rect", { x: labelWidth, y, width: barWidth, height: 18, rx: 4, class: "metric-chart-track" });
+    appendChartSvg(svg, "rect", { x: labelWidth, y, width: (entry.value / maximum) * barWidth, height: 18, rx: 4, class: `metric-chart-bar${entry.muscle === selectedMuscle ? " is-selected" : ""}` });
+    appendChartSvg(svg, "text", { x: width - 4, y: y + 15, class: "metric-chart-value" }, entry.value.toFixed(1));
+  });
+
+  container.replaceChildren(svg);
+}
+
+function renderComparisonBarChart(container, prior, recent, statistic, muscle) {
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  const width = 720;
+  const height = 110;
+  const labelWidth = 130;
+  const valueWidth = 78;
+  const barWidth = width - labelWidth - valueWidth - 20;
+  const maximum = Math.max(prior, recent, 1);
+  const entries = [{ label: "Prior 4 weeks", value: prior, selected: false }, { label: "Latest 4 weeks", value: recent, selected: true }];
+  svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+  svg.setAttribute("role", "img");
+  svg.setAttribute("aria-label", `${muscle} ${statistic} comparison`);
+
+  entries.forEach((entry, index) => {
+    const y = 20 + index * 42;
+    appendChartSvg(svg, "text", { x: labelWidth - 10, y: y + 16, class: "metric-chart-label", "text-anchor": "end" }, entry.label);
+    appendChartSvg(svg, "rect", { x: labelWidth, y, width: barWidth, height: 20, rx: 4, class: "metric-chart-track" });
+    appendChartSvg(svg, "rect", { x: labelWidth, y, width: (entry.value / maximum) * barWidth, height: 20, rx: 4, class: `metric-chart-bar${entry.selected ? " is-selected" : ""}` });
+    appendChartSvg(svg, "text", { x: width - 4, y: y + 16, class: "metric-chart-value" }, entry.value.toFixed(1));
+  });
+
+  container.replaceChildren(svg);
+}
+
+function appendChartSvg(svg, tagName, attributes, text = "") {
+  const element = document.createElementNS("http://www.w3.org/2000/svg", tagName);
+  for (const [name, value] of Object.entries(attributes)) {
+    element.setAttribute(name, value);
+  }
+  element.textContent = text;
+  svg.append(element);
 }
 
 function getEstimatedOneRmPrs(rows, startDate, endDate) {

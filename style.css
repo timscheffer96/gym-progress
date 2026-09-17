@@ -96,6 +96,64 @@ select {
   border-color: #3e55c7;
 }
 
+.chart-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 1rem 0 0.5rem;
+}
+
+.chart-controls label {
+  display: grid;
+  gap: 0.35rem;
+  color: #344054;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.chart-controls select {
+  min-width: 12rem;
+}
+
+.chart-value {
+  margin: 0.75rem 0;
+  color: #344054;
+  font-weight: 700;
+}
+
+.metric-chart {
+  overflow-x: auto;
+}
+
+.metric-chart svg {
+  display: block;
+  min-width: 540px;
+  width: 100%;
+}
+
+.metric-chart-label {
+  fill: #344054;
+  font-size: 13px;
+}
+
+.metric-chart-value {
+  fill: #566176;
+  font-size: 12px;
+  text-anchor: end;
+}
+
+.metric-chart-track {
+  fill: #e9edf5;
+}
+
+.metric-chart-bar {
+  fill: #8e9ae4;
+}
+
+.metric-chart-bar.is-selected {
+  fill: #3e55c7;
+}
+
 h1, h2, h3, p {
   margin-top: 0;
 }
