@@ -8,4 +8,7 @@ Open `index.html` in a web browser.
 
 ## Current milestone
 
-The app has a basic page shell. Next, we will add a form for logging a set.
+The app will import a Strong CSV export and analyse the logged sets. The
+`exercise-muscles.js` file maps each exercise name in the supplied export to
+its primary and secondary muscle groups. We will use this mapping when we add
+the CSV importer.
