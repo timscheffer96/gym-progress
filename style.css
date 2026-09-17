@@ -181,6 +181,63 @@ h3 {
   line-height: 1.5;
 }
 
+.body-map-section {
+  margin-top: 1.5rem;
+}
+
+.body-map-section h3 {
+  margin-bottom: 0.5rem;
+}
+
+.body-map-legend {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.75rem 0;
+  color: #566176;
+  font-size: 0.8rem;
+}
+
+.body-map-legend i {
+  display: block;
+  width: 9rem;
+  height: 0.75rem;
+  background: linear-gradient(90deg, hsl(230 64% 90%), hsl(230 64% 45%));
+  border-radius: 99px;
+}
+
+.body-map {
+  display: block;
+  width: min(100%, 600px);
+  margin: 0 auto;
+}
+
+.body-silhouette {
+  fill: #edf0f5;
+}
+
+.body-map-label {
+  fill: #566176;
+  font-size: 14px;
+  font-weight: 700;
+  text-anchor: middle;
+}
+
+.body-regions [data-muscle] {
+  fill: hsl(230 64% 90%);
+  stroke: #ffffff;
+  stroke-width: 1.5;
+  cursor: pointer;
+  transition: opacity 150ms ease, stroke-width 150ms ease;
+}
+
+.body-regions [data-muscle]:hover,
+.body-regions [data-muscle]:focus,
+.body-regions [data-muscle].is-highlighted {
+  stroke: #172033;
+  stroke-width: 3;
+}
+
 .deload-section {
   padding: 1rem 1.25rem;
   background: #ffffff;

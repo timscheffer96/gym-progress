@@ -10,9 +10,13 @@ const comparisonTableBody = document.querySelector("#comparison-table-body");
 const comparisonDescription = document.querySelector("#comparison-description");
 const prTableBody = document.querySelector("#pr-table-body");
 const deloadDescription = document.querySelector("#deload-description");
+const bodyMap = document.querySelector("#body-map");
+const bodyMapStatus = document.querySelector("#body-map-status");
 let summaryRows = [];
+let bodyMapAverages = new Map();
 
 initialiseSummaryPage();
+initialiseBodyMap();
 
 function initialiseSummaryPage() {
   summaryRows = loadImportedRows();
@@ -58,9 +62,52 @@ function renderSummary() {
   document.querySelector("#pr-count").textContent = prs.length;
   document.querySelector("#deload-weeks").textContent = deload ? deload.weeksSince : "—";
   renderVolumeTable(volume, weeksInPeriod);
+  renderBodyMap(volume, weeksInPeriod);
   renderFourWeekComparison(endDate);
   renderPrTable(prs, startDate, endDate);
   renderDeload(deload);
+}
+
+function initialiseBodyMap() {
+  for (const region of bodyMap.querySelectorAll("[data-muscle]")) {
+    region.setAttribute("tabindex", "0");
+    region.addEventListener("mouseenter", () => showBodyMapValue(region.dataset.muscle));
+    region.addEventListener("focus", () => showBodyMapValue(region.dataset.muscle));
+    region.addEventListener("mouseleave", clearBodyMapValue);
+    region.addEventListener("blur", clearBodyMapValue);
+  }
+}
+
+function renderBodyMap(volume, weeksInPeriod) {
+  bodyMapAverages = new Map([...volume.entries()].map(([muscle, counts]) => [muscle, counts.total / weeksInPeriod]));
+  const maximum = Math.max(...bodyMapAverages.values(), 1);
+
+  for (const region of bodyMap.querySelectorAll("[data-muscle]")) {
+    const muscle = region.dataset.muscle;
+    const average = bodyMapAverages.get(muscle) ?? 0;
+    const intensity = average / maximum;
+    const lightness = 90 - intensity * 45;
+    region.style.fill = `hsl(230 64% ${lightness}%)`;
+    region.setAttribute("aria-label", `${muscle}: ${average.toFixed(1)} average total sets per week`);
+    const title = document.createElementNS("http://www.w3.org/2000/svg", "title");
+    title.textContent = `${muscle}: ${average.toFixed(1)} average total sets per week`;
+    region.replaceChildren(title);
+  }
+}
+
+function showBodyMapValue(muscle) {
+  const average = bodyMapAverages.get(muscle) ?? 0;
+  bodyMapStatus.textContent = `${muscle}: ${average.toFixed(1)} average total sets per week.`;
+  for (const region of bodyMap.querySelectorAll("[data-muscle]")) {
+    region.classList.toggle("is-highlighted", region.dataset.muscle === muscle);
+  }
+}
+
+function clearBodyMapValue() {
+  bodyMapStatus.textContent = "Hover or focus a muscle region to see its average total sets per week.";
+  for (const region of bodyMap.querySelectorAll("[data-muscle]")) {
+    region.classList.remove("is-highlighted");
+  }
 }
 
 function getSessionCount(rows) {

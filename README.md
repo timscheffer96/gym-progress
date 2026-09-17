@@ -61,6 +61,10 @@ The Summary muscle-volume table also displays direct and total averages per
 week. Each estimated-1RM PR links to the selected exercise on the Lift trends
 page, carrying the selected Summary date range with it.
 
+The Summary page includes an interactive front-and-back body map. Its colour
+intensity and hover values show average total sets per week for the selected
+period.
+
 ## Metric definitions
 
 In this app, **volume** means the number of logged hard sets. We assume that

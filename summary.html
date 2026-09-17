@@ -47,6 +47,40 @@
               <tbody id="volume-table-body"></tbody>
             </table>
           </div>
+
+          <div class="body-map-section">
+            <h3>Average total sets per week</h3>
+            <p id="body-map-status" class="table-note" aria-live="polite">Hover or focus a muscle region to see its average total sets per week.</p>
+            <div class="body-map-legend" aria-hidden="true"><span>Fewer sets</span><i></i><span>More sets</span></div>
+            <svg id="body-map" class="body-map" viewBox="0 0 600 500" role="img" aria-label="Interactive front and back body map coloured by average total sets per week">
+              <text x="150" y="28" class="body-map-label">Front</text>
+              <text x="450" y="28" class="body-map-label">Back</text>
+              <g class="body-silhouette"><circle cx="150" cy="52" r="22"/><path d="M118 83 L182 83 L199 170 L176 225 L124 225 L101 170 Z"/><path d="M126 218 L150 218 L144 355 L112 355 Z"/><path d="M150 218 L174 218 L188 355 L156 355 Z"/><path d="M112 350 L144 350 L139 470 L110 470 Z"/><path d="M156 350 L188 350 L190 470 L161 470 Z"/><path d="M107 92 L82 150 L96 216 L116 210 L123 153 Z"/><path d="M193 92 L218 150 L204 216 L184 210 L177 153 Z"/></g>
+              <g class="body-silhouette"><circle cx="450" cy="52" r="22"/><path d="M418 83 L482 83 L499 170 L476 225 L424 225 L401 170 Z"/><path d="M426 218 L450 218 L444 355 L412 355 Z"/><path d="M450 218 L474 218 L488 355 L456 355 Z"/><path d="M412 350 L444 350 L439 470 L410 470 Z"/><path d="M456 350 L488 350 L490 470 L461 470 Z"/><path d="M407 92 L382 150 L396 216 L416 210 L423 153 Z"/><path d="M493 92 L518 150 L504 216 L484 210 L477 153 Z"/></g>
+
+              <g class="body-regions">
+                <ellipse data-muscle="front delts" cx="119" cy="100" rx="17" ry="18"/><ellipse data-muscle="front delts" cx="181" cy="100" rx="17" ry="18"/>
+                <ellipse data-muscle="side delts" cx="104" cy="112" rx="9" ry="17"/><ellipse data-muscle="side delts" cx="196" cy="112" rx="9" ry="17"/>
+                <ellipse data-muscle="chest" cx="134" cy="130" rx="18" ry="20"/><ellipse data-muscle="chest" cx="166" cy="130" rx="18" ry="20"/>
+                <ellipse data-muscle="biceps" cx="103" cy="151" rx="10" ry="24"/><ellipse data-muscle="biceps" cx="197" cy="151" rx="10" ry="24"/>
+                <ellipse data-muscle="forearms" cx="98" cy="195" rx="8" ry="20"/><ellipse data-muscle="forearms" cx="202" cy="195" rx="8" ry="20"/>
+                <rect data-muscle="abs" x="134" y="158" width="32" height="52" rx="12"/>
+                <ellipse data-muscle="hip flexors" cx="132" cy="231" rx="16" ry="13"/><ellipse data-muscle="hip flexors" cx="168" cy="231" rx="16" ry="13"/>
+                <ellipse data-muscle="quads" cx="127" cy="288" rx="15" ry="48"/><ellipse data-muscle="quads" cx="173" cy="288" rx="15" ry="48"/>
+                <ellipse data-muscle="adductors" cx="142" cy="292" rx="8" ry="45"/><ellipse data-muscle="adductors" cx="158" cy="292" rx="8" ry="45"/>
+                <ellipse data-muscle="calves" cx="124" cy="408" rx="13" ry="42"/><ellipse data-muscle="calves" cx="176" cy="408" rx="13" ry="42"/>
+
+                <ellipse data-muscle="rear delts" cx="419" cy="102" rx="17" ry="18"/><ellipse data-muscle="rear delts" cx="481" cy="102" rx="17" ry="18"/>
+                <path data-muscle="back" d="M425 117 L475 117 L486 175 L464 190 L436 190 L414 175 Z"/>
+                <rect data-muscle="lower back" x="432" y="184" width="36" height="33" rx="10"/>
+                <ellipse data-muscle="triceps" cx="403" cy="151" rx="10" ry="24"/><ellipse data-muscle="triceps" cx="497" cy="151" rx="10" ry="24"/>
+                <ellipse data-muscle="forearms" cx="398" cy="195" rx="8" ry="20"/><ellipse data-muscle="forearms" cx="502" cy="195" rx="8" ry="20"/>
+                <ellipse data-muscle="glutes" cx="434" cy="239" rx="20" ry="17"/><ellipse data-muscle="glutes" cx="466" cy="239" rx="20" ry="17"/>
+                <ellipse data-muscle="hamstrings" cx="427" cy="298" rx="15" ry="49"/><ellipse data-muscle="hamstrings" cx="473" cy="298" rx="15" ry="49"/>
+                <ellipse data-muscle="calves" cx="424" cy="408" rx="13" ry="42"/><ellipse data-muscle="calves" cx="476" cy="408" rx="13" ry="42"/>
+              </g>
+            </svg>
+          </div>
         </section>
 
         <section class="summary-section" aria-labelledby="comparison-title">
