@@ -61,10 +61,9 @@ The Summary muscle-volume table also displays direct and total averages per
 week. Each estimated-1RM PR links to the selected exercise on the Lift trends
 page, carrying the selected Summary date range with it.
 
-The Summary volume and four-week comparison views use interactive charts.
-Choose a muscle group and the direct/total or total/weekly-average statistic to
-inspect; the muscle-volume chart highlights the selected group among all groups.
-Each chart also includes a weekly line trend for the selected Summary period.
+The Summary volume and four-week comparison views use interactive weekly line
+charts. Choose a muscle group and the direct/total or weekly-average statistic
+to inspect for the selected Summary period.
 
 The Summary page includes an interactive front-and-back body map. Its colour
 intensity and hover values show average total sets per week for the selected

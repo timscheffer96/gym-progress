@@ -142,18 +142,6 @@ select {
   text-anchor: end;
 }
 
-.metric-chart-track {
-  fill: #e9edf5;
-}
-
-.metric-chart-bar {
-  fill: #8e9ae4;
-}
-
-.metric-chart-bar.is-selected {
-  fill: #3e55c7;
-}
-
 .weekly-chart-title {
   margin: 1.5rem 0 0.5rem;
 }

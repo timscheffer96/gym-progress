@@ -13,12 +13,10 @@ const bodyMapStatus = document.querySelector("#body-map-status");
 const periodPresetButtons = document.querySelectorAll("[data-period]");
 const volumeMuscleSelect = document.querySelector("#volume-muscle-select");
 const volumeStatSelect = document.querySelector("#volume-stat-select");
-const volumeChart = document.querySelector("#volume-chart");
 const volumeChartValue = document.querySelector("#volume-chart-value");
 const volumeLineChart = document.querySelector("#volume-line-chart");
 const comparisonMuscleSelect = document.querySelector("#comparison-muscle-select");
 const comparisonStatSelect = document.querySelector("#comparison-stat-select");
-const comparisonChart = document.querySelector("#comparison-chart");
 const comparisonChartValue = document.querySelector("#comparison-chart-value");
 const comparisonLineChart = document.querySelector("#comparison-line-chart");
 let summaryRows = [];
@@ -171,7 +169,6 @@ function renderVolumeChart(volume, weeksInPeriod, weeklyVolume) {
   const entries = muscles.map((muscle) => ({ muscle, value: getVolumeStatistic(volume.get(muscle), weeksInPeriod, statistic) }));
   const selectedValue = entries.find((entry) => entry.muscle === selectedMuscle)?.value ?? 0;
   volumeChartValue.textContent = `${selectedMuscle}: ${formatSetValue(selectedValue, statistic)}`;
-  renderHorizontalBarChart(volumeChart, entries, selectedMuscle, "Muscle-group volume chart");
   renderWeeklyLineChart(volumeLineChart, getWeeklySeries(weeklyVolume, selectedMuscle, statistic), `${selectedMuscle} weekly volume trend`);
 }
 
@@ -191,7 +188,6 @@ function renderFourWeekComparison(startDate, endDate, weeklyVolume) {
   const recent = getVolumeStatistic(recentVolume.get(muscle), 4, statistic);
   const change = recent - prior;
   comparisonChartValue.textContent = `${muscle}: latest ${formatSetValue(recent, statistic)} · prior ${formatSetValue(prior, statistic)} · ${change >= 0 ? "+" : ""}${formatSetValue(change, statistic)}`;
-  renderComparisonBarChart(comparisonChart, prior, recent, statistic, muscle);
   renderWeeklyLineChart(comparisonLineChart, getWeeklySeries(weeklyVolume, muscle, statistic), `${muscle} selected-period comparison trend`);
 }
 
@@ -265,54 +261,6 @@ function getVolumeStatistic(counts, weeks, statistic) {
 
 function formatSetValue(value, statistic) {
   return statistic.endsWith("average") ? `${value.toFixed(1)} sets/week` : `${value.toFixed(1)} sets`;
-}
-
-function renderHorizontalBarChart(container, entries, selectedMuscle, label) {
-  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-  const width = 720;
-  const rowHeight = 30;
-  const height = Math.max(100, entries.length * rowHeight + 24);
-  const labelWidth = 130;
-  const valueWidth = 78;
-  const barWidth = width - labelWidth - valueWidth - 20;
-  const maximum = Math.max(...entries.map((entry) => entry.value), 1);
-  svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
-  svg.setAttribute("role", "img");
-  svg.setAttribute("aria-label", label);
-
-  entries.forEach((entry, index) => {
-    const y = 12 + index * rowHeight;
-    appendChartSvg(svg, "text", { x: labelWidth - 10, y: y + 15, class: "metric-chart-label", "text-anchor": "end" }, entry.muscle);
-    appendChartSvg(svg, "rect", { x: labelWidth, y, width: barWidth, height: 18, rx: 4, class: "metric-chart-track" });
-    appendChartSvg(svg, "rect", { x: labelWidth, y, width: (entry.value / maximum) * barWidth, height: 18, rx: 4, class: `metric-chart-bar${entry.muscle === selectedMuscle ? " is-selected" : ""}` });
-    appendChartSvg(svg, "text", { x: width - 4, y: y + 15, class: "metric-chart-value" }, entry.value.toFixed(1));
-  });
-
-  container.replaceChildren(svg);
-}
-
-function renderComparisonBarChart(container, prior, recent, statistic, muscle) {
-  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-  const width = 720;
-  const height = 110;
-  const labelWidth = 130;
-  const valueWidth = 78;
-  const barWidth = width - labelWidth - valueWidth - 20;
-  const maximum = Math.max(prior, recent, 1);
-  const entries = [{ label: "Prior 4 weeks", value: prior, selected: false }, { label: "Latest 4 weeks", value: recent, selected: true }];
-  svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
-  svg.setAttribute("role", "img");
-  svg.setAttribute("aria-label", `${muscle} ${statistic} comparison`);
-
-  entries.forEach((entry, index) => {
-    const y = 20 + index * 42;
-    appendChartSvg(svg, "text", { x: labelWidth - 10, y: y + 16, class: "metric-chart-label", "text-anchor": "end" }, entry.label);
-    appendChartSvg(svg, "rect", { x: labelWidth, y, width: barWidth, height: 20, rx: 4, class: "metric-chart-track" });
-    appendChartSvg(svg, "rect", { x: labelWidth, y, width: (entry.value / maximum) * barWidth, height: 20, rx: 4, class: `metric-chart-bar${entry.selected ? " is-selected" : ""}` });
-    appendChartSvg(svg, "text", { x: width - 4, y: y + 16, class: "metric-chart-value" }, entry.value.toFixed(1));
-  });
-
-  container.replaceChildren(svg);
 }
 
 function renderWeeklyLineChart(container, series, label) {
