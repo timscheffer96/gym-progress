@@ -29,10 +29,11 @@ are separate measures, not pieces of one whole-body total.
 
 ## Estimated 1RM trends
 
-The separate `trends.html` page lets you select any imported Strong exercise.
-It displays the latest 12 calendar weeks in the export, lift-workout frequency,
-and direct hard-set volume for the selected lift's mapped primary and secondary
-muscles. It uses the highest Epley estimate in each week:
+The separate `trends.html` page lets you select any imported Strong exercise
+and choose the start and end dates for its trend period. It displays lift-workout
+frequency and direct hard-set volume for the selected lift's mapped primary and
+secondary muscles. The chart uses the highest Epley estimate in each week,
+while the bottom table summarises the entire selected period:
 `weight × (1 + reps ÷ 30)`.
 
 The imported rows are saved in this browser's local storage so the trends page

@@ -26,12 +26,16 @@
       <section id="trends-content" hidden>
         <label class="select-label" for="lift-select">Choose a lift</label>
         <select id="lift-select"></select>
+        <div class="date-range" aria-label="Trend period">
+          <label for="start-date">From <input id="start-date" type="date" /></label>
+          <label for="end-date">To <input id="end-date" type="date" /></label>
+        </div>
         <p id="lift-context" class="status"></p>
 
         <div class="summary-grid">
-          <article class="metric-card"><span>Latest estimated 1RM</span><strong id="latest-one-rm">—</strong></article>
-          <article class="metric-card"><span>Lift workouts (12 weeks)</span><strong id="lift-workout-count">0</strong></article>
-          <article class="metric-card"><span>Weeks trained (12 weeks)</span><strong id="lift-week-count">0</strong></article>
+          <article class="metric-card"><span>Best estimated 1RM</span><strong id="latest-one-rm">—</strong></article>
+          <article class="metric-card"><span>Lift workouts</span><strong id="lift-workout-count">0</strong></article>
+          <article class="metric-card"><span>Weeks trained</span><strong id="lift-week-count">0</strong></article>
           <article class="metric-card"><span>Focus muscles</span><strong id="focus-muscle-count">0</strong></article>
         </div>
 
@@ -42,7 +46,7 @@
         </section>
 
         <section aria-labelledby="weekly-title">
-          <h2 id="weekly-title">Latest 12 weeks</h2>
+          <h2 id="weekly-title">Selected-period summary</h2>
           <p class="table-note">Muscle volume means direct hard sets from all exercises, not just the selected lift. This lets you compare your lift trend with the direct work received by the muscles it uses.</p>
           <div class="table-wrap">
             <table>
