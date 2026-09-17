@@ -10,6 +10,17 @@ const muscleSetSummary = document.querySelector("#muscle-set-summary");
 const weeklyTableBody = document.querySelector("#weekly-table-body");
 
 csvFileInput.addEventListener("change", handleFileSelection);
+restoreSavedImport();
+
+function restoreSavedImport() {
+  const savedRows = loadImportedRows();
+
+  if (savedRows.length === 0) {
+    return;
+  }
+
+  showImport(savedRows, "your locally saved import");
+}
 
 async function handleFileSelection(event) {
   const [file] = event.target.files;
@@ -99,7 +110,7 @@ function showImport(rows, fileName) {
   document.querySelector("#workout-count").textContent = workoutIds.size.toLocaleString();
   document.querySelector("#exercise-count").textContent = exerciseNames.length.toLocaleString();
   document.querySelector("#unmapped-count").textContent = unmappedExercises.length.toLocaleString();
-  fileStatus.textContent = `${fileName} imported successfully. Nothing was uploaded.`;
+  fileStatus.textContent = `${fileName} is ready. Nothing was uploaded.`;
 
   showUnmappedExercises(unmappedExercises);
   showHardSetSummary(rows);

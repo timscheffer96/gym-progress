@@ -41,8 +41,8 @@ hard sets per week. Hovering or keyboard-focusing a chart point reveals the
 week and its calculated estimated 1RM.
 
 The imported rows are saved in this browser's local storage so the trends page
-can use them without another upload. They are not sent to a server or committed
-to Git.
+and Dashboard can use them without another upload. They are not sent to a
+server or committed to Git.
 
 ## Summary
 
