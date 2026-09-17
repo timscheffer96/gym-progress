@@ -172,6 +172,22 @@ h3 {
   margin: 2rem 0;
 }
 
+.summary-section {
+  margin: 2rem 0;
+}
+
+.summary-section > p {
+  color: #566176;
+  line-height: 1.5;
+}
+
+.deload-section {
+  padding: 1rem 1.25rem;
+  background: #ffffff;
+  border-left: 4px solid #7a5af8;
+  border-radius: 0 0.75rem 0.75rem 0;
+}
+
 .one-rm-panel > p {
   color: #566176;
   line-height: 1.5;

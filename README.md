@@ -44,6 +44,15 @@ The imported rows are saved in this browser's local storage so the trends page
 can use them without another upload. They are not sent to a server or committed
 to Git.
 
+## Summary
+
+The `summary.html` page reports sessions, direct and weighted-total muscle
+volume, a four-week volume comparison, estimated-1RM PRs, and a deload check
+for a selected period. Weighted-total volume counts direct sets as 1 and
+indirect sets as 0.5. The deload check is a configurable heuristic: a completed
+Monday–Sunday week with logged training at or below 50% of the preceding four
+completed weeks' average direct hard-set count.
+
 ## Metric definitions
 
 In this app, **volume** means the number of logged hard sets. We assume that

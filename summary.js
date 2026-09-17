@@ -1,0 +1,261 @@
+"use strict";
+
+const summaryStartDate = document.querySelector("#summary-start-date");
+const summaryEndDate = document.querySelector("#summary-end-date");
+const summaryContent = document.querySelector("#summary-content");
+const noSummaryImport = document.querySelector("#no-import");
+const summaryStatus = document.querySelector("#summary-status");
+const volumeTableBody = document.querySelector("#volume-table-body");
+const comparisonTableBody = document.querySelector("#comparison-table-body");
+const comparisonDescription = document.querySelector("#comparison-description");
+const prTableBody = document.querySelector("#pr-table-body");
+const deloadDescription = document.querySelector("#deload-description");
+let summaryRows = [];
+
+initialiseSummaryPage();
+
+function initialiseSummaryPage() {
+  summaryRows = loadImportedRows();
+
+  if (summaryRows.length === 0) {
+    noSummaryImport.hidden = false;
+    return;
+  }
+
+  const dates = summaryRows.map((row) => row.Date.slice(0, 10)).filter(Boolean).sort();
+  const firstDate = dates[0];
+  const lastDate = dates.at(-1);
+  for (const input of [summaryStartDate, summaryEndDate]) {
+    input.min = firstDate;
+    input.max = lastDate;
+  }
+  summaryEndDate.value = lastDate;
+  summaryStartDate.value = [firstDate, dateDaysBeforeSummary(lastDate, 83)].sort().at(-1);
+  summaryStartDate.addEventListener("change", renderSummary);
+  summaryEndDate.addEventListener("change", renderSummary);
+  summaryContent.hidden = false;
+  renderSummary();
+}
+
+function renderSummary() {
+  const startDate = summaryStartDate.value;
+  const endDate = summaryEndDate.value;
+
+  if (startDate > endDate) {
+    summaryStatus.textContent = "The start date must be on or before the end date.";
+    return;
+  }
+
+  const periodRows = summaryRows.filter((row) => isInSummaryPeriod(row.Date, startDate, endDate));
+  const volume = getMuscleVolume(periodRows);
+  const prs = getEstimatedOneRmPrs(summaryRows, startDate, endDate);
+  const deload = getMostRecentDeload(summaryRows, endDate);
+
+  summaryStatus.textContent = `${startDate} to ${endDate}`;
+  document.querySelector("#session-count").textContent = getSessionCount(periodRows);
+  document.querySelector("#period-week-count").textContent = numberOfWeeksInSummaryPeriod(startDate, endDate).toFixed(1);
+  document.querySelector("#pr-count").textContent = prs.length;
+  document.querySelector("#deload-weeks").textContent = deload ? deload.weeksSince : "—";
+  renderVolumeTable(volume);
+  renderFourWeekComparison(startDate, endDate);
+  renderPrTable(prs);
+  renderDeload(deload);
+}
+
+function getSessionCount(rows) {
+  return new Set(rows.map((row) => `${row.Date}-${row["Workout #"]}`)).size;
+}
+
+function getMuscleVolume(rows) {
+  const volume = new Map();
+
+  for (const row of rows) {
+    const mapping = exerciseMuscles[row["Exercise Name"].trim()];
+    if (!mapping) {
+      continue;
+    }
+
+    for (const muscle of mapping.primary) {
+      const counts = volume.get(muscle) ?? { direct: 0, total: 0 };
+      counts.direct += 1;
+      counts.total += 1;
+      volume.set(muscle, counts);
+    }
+    for (const muscle of mapping.secondary) {
+      const counts = volume.get(muscle) ?? { direct: 0, total: 0 };
+      counts.total += 0.5;
+      volume.set(muscle, counts);
+    }
+  }
+
+  return volume;
+}
+
+function renderVolumeTable(volume) {
+  volumeTableBody.replaceChildren();
+  const entries = [...volume.entries()].sort(([, first], [, second]) => second.total - first.total);
+
+  for (const [muscle, counts] of entries) {
+    appendSummaryRow(volumeTableBody, [muscle, counts.direct, counts.total.toFixed(1)]);
+  }
+}
+
+function renderFourWeekComparison(startDate, endDate) {
+  comparisonTableBody.replaceChildren();
+  const latestStart = dateDaysBeforeSummary(endDate, 27);
+  const priorEnd = dateDaysBeforeSummary(latestStart, 1);
+  const priorStart = dateDaysBeforeSummary(priorEnd, 27);
+
+  if (priorStart < startDate) {
+    comparisonDescription.textContent = "Choose a period of at least eight weeks to compare the latest four weeks with the four weeks before them.";
+    appendSummaryRow(comparisonTableBody, ["Not enough selected history", "—", "—", "—"]);
+    return;
+  }
+
+  const recentVolume = getMuscleVolume(summaryRows.filter((row) => isInSummaryPeriod(row.Date, latestStart, endDate)));
+  const priorVolume = getMuscleVolume(summaryRows.filter((row) => isInSummaryPeriod(row.Date, priorStart, priorEnd)));
+  const muscles = [...new Set([...recentVolume.keys(), ...priorVolume.keys()])].sort((first, second) => (recentVolume.get(second)?.total ?? 0) - (recentVolume.get(first)?.total ?? 0));
+  comparisonDescription.textContent = `${latestStart} to ${endDate} compared with ${priorStart} to ${priorEnd}. Total volume is direct sets plus half of indirect sets.`;
+
+  for (const muscle of muscles) {
+    const recent = recentVolume.get(muscle)?.total ?? 0;
+    const prior = priorVolume.get(muscle)?.total ?? 0;
+    const change = recent - prior;
+    appendSummaryRow(comparisonTableBody, [muscle, recent.toFixed(1), prior.toFixed(1), `${change >= 0 ? "+" : ""}${change.toFixed(1)}`]);
+  }
+}
+
+function getEstimatedOneRmPrs(rows, startDate, endDate) {
+  const priorBest = new Map();
+  const periodBest = new Map();
+
+  for (const row of rows) {
+    const estimate = estimateOneRm(row);
+    if (estimate === null) {
+      continue;
+    }
+    const exercise = row["Exercise Name"].trim();
+    const date = row.Date.slice(0, 10);
+
+    if (date < startDate) {
+      priorBest.set(exercise, Math.max(priorBest.get(exercise) ?? 0, estimate));
+    } else if (date <= endDate) {
+      const current = periodBest.get(exercise);
+      if (!current || estimate > current.estimate) {
+        periodBest.set(exercise, { date, estimate });
+      }
+    }
+  }
+
+  return [...periodBest.entries()]
+    .filter(([exercise, result]) => priorBest.has(exercise) && result.estimate > priorBest.get(exercise))
+    .map(([exercise, result]) => ({ exercise, ...result, previous: priorBest.get(exercise), improvement: result.estimate - priorBest.get(exercise) }))
+    .sort((first, second) => second.improvement - first.improvement)
+    .slice(0, 10);
+}
+
+function renderPrTable(prs) {
+  prTableBody.replaceChildren();
+  if (prs.length === 0) {
+    appendSummaryRow(prTableBody, ["No estimated-1RM PRs in this period", "—", "—", "—", "—"]);
+    return;
+  }
+
+  for (const pr of prs) {
+    appendSummaryRow(prTableBody, [pr.exercise, pr.date, `${pr.estimate.toFixed(1)} kg`, `${pr.previous.toFixed(1)} kg`, `+${pr.improvement.toFixed(1)} kg`]);
+  }
+}
+
+function getMostRecentDeload(rows, endDate) {
+  const fullWeekEnd = getLastCompletedWeekStart(endDate);
+  const firstWeek = getWeekStartSummary(rows.map((row) => row.Date).filter(Boolean).sort()[0]);
+  const weeks = [];
+  const cursor = new Date(`${firstWeek}T12:00:00`);
+
+  while (cursor.toISOString().slice(0, 10) <= fullWeekEnd) {
+    weeks.push(cursor.toISOString().slice(0, 10));
+    cursor.setDate(cursor.getDate() + 7);
+  }
+
+  const weeklyDirectSets = new Map(weeks.map((week) => [week, 0]));
+  for (const row of rows) {
+    const week = getWeekStartSummary(row.Date);
+    if (!weeklyDirectSets.has(week) || !exerciseMuscles[row["Exercise Name"].trim()]) {
+      continue;
+    }
+    weeklyDirectSets.set(week, weeklyDirectSets.get(week) + exerciseMuscles[row["Exercise Name"].trim()].primary.length);
+  }
+
+  let latestDeload = null;
+  for (let index = 4; index < weeks.length; index += 1) {
+    const precedingAverage = weeks.slice(index - 4, index).reduce((total, week) => total + weeklyDirectSets.get(week), 0) / 4;
+    const currentSets = weeklyDirectSets.get(weeks[index]);
+    if (currentSets > 0 && precedingAverage > 0 && currentSets <= precedingAverage * 0.5) {
+      latestDeload = weeks[index];
+    }
+  }
+
+  if (!latestDeload) {
+    return null;
+  }
+
+  return {
+    week: latestDeload,
+    weeksSince: Math.round((new Date(`${fullWeekEnd}T12:00:00`) - new Date(`${latestDeload}T12:00:00`)) / 604_800_000),
+  };
+}
+
+function renderDeload(deload) {
+  deloadDescription.textContent = deload
+    ? `Most recent qualifying deload: week beginning ${deload.week} (${deload.weeksSince} full week${deload.weeksSince === 1 ? "" : "s"} ago). A qualifying deload is a completed Monday–Sunday week with logged training at or below 50% of the prior four completed weeks' average direct hard-set count.`
+    : "No qualifying full deload week was found before the selected end date. A qualifying deload is a completed Monday–Sunday week with logged training at or below 50% of the prior four completed weeks' average direct hard-set count.";
+}
+
+function appendSummaryRow(tableBody, values) {
+  const row = document.createElement("tr");
+  for (const value of values) {
+    const cell = document.createElement("td");
+    cell.textContent = value;
+    row.append(cell);
+  }
+  tableBody.append(row);
+}
+
+function estimateOneRm(row) {
+  const weight = Number(row["Weight (kg)"]);
+  const reps = Number(row.Reps);
+  return Number.isFinite(weight) && Number.isFinite(reps) && weight > 0 && reps > 0 ? weight * (1 + reps / 30) : null;
+}
+
+function getWeekStartSummary(dateTime) {
+  const date = new Date(`${dateTime.slice(0, 10)}T12:00:00`);
+  const offset = (date.getDay() + 6) % 7;
+  date.setDate(date.getDate() - offset);
+  return date.toISOString().slice(0, 10);
+}
+
+function getLastCompletedWeekStart(endDate) {
+  const date = new Date(`${endDate}T12:00:00`);
+  const weekStart = getWeekStartSummary(endDate);
+  if (date.getDay() === 0) {
+    return weekStart;
+  }
+  const previousWeek = new Date(`${weekStart}T12:00:00`);
+  previousWeek.setDate(previousWeek.getDate() - 7);
+  return previousWeek.toISOString().slice(0, 10);
+}
+
+function numberOfWeeksInSummaryPeriod(startDate, endDate) {
+  return (new Date(`${endDate}T12:00:00`) - new Date(`${startDate}T12:00:00`) + 86_400_000) / 604_800_000;
+}
+
+function isInSummaryPeriod(dateTime, startDate, endDate) {
+  const date = dateTime.slice(0, 10);
+  return date >= startDate && date <= endDate;
+}
+
+function dateDaysBeforeSummary(dateString, days) {
+  const date = new Date(`${dateString}T12:00:00`);
+  date.setDate(date.getDate() - days);
+  return date.toISOString().slice(0, 10);
+}

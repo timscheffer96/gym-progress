@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Summary · Gym Progress</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header>
+        <nav class="site-nav" aria-label="Main navigation">
+          <a href="index.html">Dashboard</a>
+          <a href="trends.html">Lift trends</a>
+          <a href="summary.html" aria-current="page">Summary</a>
+        </nav>
+        <p class="eyebrow">Strong workout analysis</p>
+        <h1>Training summary</h1>
+        <p class="intro">Review sessions, muscle-group volume, estimated-1RM PRs, and deload history for a period you choose.</p>
+      </header>
+
+      <section id="no-import" class="upload-panel" hidden>
+        <h2>Import needed</h2>
+        <p class="status">Return to the <a href="index.html">dashboard</a> and import a Strong CSV first. Your import is kept only in this browser.</p>
+      </section>
+
+      <section id="summary-content" hidden>
+        <div class="date-range" aria-label="Summary period">
+          <label for="summary-start-date">From <input id="summary-start-date" type="date" /></label>
+          <label for="summary-end-date">To <input id="summary-end-date" type="date" /></label>
+        </div>
+        <p id="summary-status" class="status"></p>
+
+        <div class="summary-grid">
+          <article class="metric-card"><span>Training sessions</span><strong id="session-count">0</strong></article>
+          <article class="metric-card"><span>Weeks in period</span><strong id="period-week-count">0</strong></article>
+          <article class="metric-card"><span>Estimated-1RM PRs</span><strong id="pr-count">0</strong></article>
+          <article class="metric-card"><span>Weeks since full deload</span><strong id="deload-weeks">—</strong></article>
+        </div>
+
+        <section class="summary-section" aria-labelledby="volume-title">
+          <h2 id="volume-title">Muscle-group volume</h2>
+          <p>Direct volume counts a primary-muscle set as 1. Total volume counts direct sets plus half of each indirect set.</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Muscle group</th><th>Direct sets</th><th>Total sets</th></tr></thead>
+              <tbody id="volume-table-body"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="summary-section" aria-labelledby="comparison-title">
+          <h2 id="comparison-title">Latest 4 weeks vs. 4 weeks prior</h2>
+          <p id="comparison-description" class="table-note"></p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Muscle group</th><th>Latest 4 weeks: total sets</th><th>Prior 4 weeks: total sets</th><th>Change</th></tr></thead>
+              <tbody id="comparison-table-body"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="summary-section" aria-labelledby="pr-title">
+          <h2 id="pr-title">Notable estimated-1RM PRs</h2>
+          <p class="table-note">These are the 10 largest estimated-1RM improvements in the selected period compared with an earlier record for the same exercise.</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Exercise</th><th>Date</th><th>New estimate</th><th>Previous best</th><th>Improvement</th></tr></thead>
+              <tbody id="pr-table-body"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="summary-section deload-section" aria-labelledby="deload-title">
+          <h2 id="deload-title">Deload check</h2>
+          <p id="deload-description" class="table-note"></p>
+        </section>
+      </section>
+    </main>
+
+    <script src="data.js"></script>
+    <script src="exercise-muscles.js"></script>
+    <script src="summary.js"></script>
+  </body>
+</html>
