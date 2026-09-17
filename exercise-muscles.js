@@ -4,6 +4,10 @@
 // The importer will trim exercise names before looking them up, so a small
 // spelling difference in Strong will not be confused with leading/trailing spaces.
 // These are sensible defaults, not medical facts: edit them to match how you train.
+//
+// Volume in this project means hard-set count, not weight x reps (tonnage).
+// Each logged working set counts as one set for every listed primary muscle.
+// Secondary muscles will be shown separately as contributing/indirect sets.
 const exerciseMuscles = {
   "Back Extension": { primary: ["lower back"], secondary: ["glutes", "hamstrings"] },
   "Bench Press (Barbell)": { primary: ["chest"], secondary: ["triceps", "front delts"] },
