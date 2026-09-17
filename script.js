@@ -3,7 +3,6 @@
 const csvFileInput = document.querySelector("#csv-file");
 const fileStatus = document.querySelector("#file-status");
 const results = document.querySelector("#results");
-const setsTableBody = document.querySelector("#sets-table-body");
 const unmappedList = document.querySelector("#unmapped-list");
 const unmappedMessage = document.querySelector("#unmapped-message");
 const muscleSetSummary = document.querySelector("#muscle-set-summary");
@@ -115,7 +114,6 @@ function showImport(rows, fileName) {
   showUnmappedExercises(unmappedExercises);
   showHardSetSummary(rows);
   showWeeklyHardSets(rows);
-  showSetRows(rows.slice(0, 25));
   results.hidden = false;
 }
 
@@ -220,34 +218,4 @@ function showUnmappedExercises(unmappedExercises) {
     item.textContent = exerciseName;
     unmappedList.append(item);
   }
-}
-
-function showSetRows(rows) {
-  setsTableBody.replaceChildren();
-
-  for (const row of rows) {
-    const exerciseName = row["Exercise Name"].trim();
-    const mapping = exerciseMuscles[exerciseName];
-    const cells = [
-      formatDate(row.Date),
-      exerciseName,
-      row["Weight (kg)"] ? `${row["Weight (kg)"]} kg` : "—",
-      row.Reps || "—",
-      mapping ? mapping.primary.join(", ") : "Not mapped",
-      mapping?.secondary.join(", ") || "—",
-    ];
-    const tableRow = document.createElement("tr");
-
-    for (const cellText of cells) {
-      const cell = document.createElement("td");
-      cell.textContent = cellText;
-      tableRow.append(cell);
-    }
-
-    setsTableBody.append(tableRow);
-  }
-}
-
-function formatDate(value) {
-  return value ? value.slice(0, 10) : "—";
 }

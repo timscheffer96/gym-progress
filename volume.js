@@ -15,6 +15,7 @@ const volumeChartValue = document.querySelector("#volume-chart-value");
 const volumeLineChart = document.querySelector("#volume-line-chart");
 const volumeLineLegend = document.querySelector("#volume-line-legend");
 const volumeLineTooltip = document.querySelector("#volume-line-tooltip");
+const weeklyChartTitle = document.querySelector("#weekly-chart-title");
 let summaryRows = [];
 let bodyMapAverages = new Map();
 let summaryPeriodPresets;
@@ -148,14 +149,16 @@ function getMuscleVolume(rows) {
     }
 
     for (const muscle of mapping.primary) {
-      const counts = volume.get(muscle) ?? { direct: 0, total: 0 };
+      const counts = volume.get(muscle) ?? { direct: 0, total: 0, sessions: new Set() };
       counts.direct += 1;
       counts.total += 1;
+      counts.sessions.add(`${row.Date}-${row["Workout #"]}`);
       volume.set(muscle, counts);
     }
     for (const muscle of mapping.secondary) {
-      const counts = volume.get(muscle) ?? { direct: 0, total: 0 };
+      const counts = volume.get(muscle) ?? { direct: 0, total: 0, sessions: new Set() };
       counts.total += 0.5;
+      counts.sessions.add(`${row.Date}-${row["Workout #"]}`);
       volume.set(muscle, counts);
     }
   }
@@ -168,15 +171,16 @@ function renderVolumeChart(volume, weeksInPeriod, weeklyVolume) {
   setMuscleOptions(volumeMuscleSelect, muscles, true);
   const statistic = volumeStatSelect.value;
   const selectedMuscles = [...volumeMuscleSelect.selectedOptions].map((option) => option.value);
-  const entries = muscles.map((muscle) => ({ muscle, value: getVolumeStatistic(volume.get(muscle), weeksInPeriod, statistic) }));
+  const entries = muscles.map((muscle) => ({ muscle, value: getAverageVolumeStatistic(volume.get(muscle), weeksInPeriod, statistic) }));
   const selectedValues = selectedMuscles.map((muscle) => {
     const value = entries.find((entry) => entry.muscle === muscle)?.value ?? 0;
     return `${muscle}: ${formatSetValue(value, statistic)}`;
   });
   volumeChartValue.textContent = selectedValues.join(" · ");
   const series = selectedMuscles.map((muscle) => ({ name: muscle, points: getWeeklySeries(weeklyVolume, muscle, statistic) }));
+  weeklyChartTitle.textContent = statistic === "frequency" ? "Weekly training frequency" : "Weekly volume trend";
   renderLineLegend(series);
-  renderWeeklyLineChart(volumeLineChart, series, "Selected muscle weekly volume trend", volumeLineTooltip, statistic);
+  renderWeeklyLineChart(volumeLineChart, series, `Selected muscle weekly ${statistic === "frequency" ? "training frequency" : "volume"} trend`, volumeLineTooltip, statistic);
 }
 
 function getWeeklyMuscleVolume(startDate, endDate) {
@@ -195,14 +199,16 @@ function getWeeklyMuscleVolume(startDate, endDate) {
     }
 
     for (const muscle of mapping.primary) {
-      const counts = weekVolume.get(muscle) ?? { direct: 0, total: 0 };
+      const counts = weekVolume.get(muscle) ?? { direct: 0, total: 0, sessions: new Set() };
       counts.direct += 1;
       counts.total += 1;
+      counts.sessions.add(`${row.Date}-${row["Workout #"]}`);
       weekVolume.set(muscle, counts);
     }
     for (const muscle of mapping.secondary) {
-      const counts = weekVolume.get(muscle) ?? { direct: 0, total: 0 };
+      const counts = weekVolume.get(muscle) ?? { direct: 0, total: 0, sessions: new Set() };
       counts.total += 0.5;
+      counts.sessions.add(`${row.Date}-${row["Workout #"]}`);
       weekVolume.set(muscle, counts);
     }
   }
@@ -257,13 +263,19 @@ function setMuscleOptions(select, muscles, allowMultiple = false) {
 function getVolumeStatistic(counts, weeks, statistic) {
   const direct = counts?.direct ?? 0;
   const total = counts?.total ?? 0;
+  const frequency = counts?.sessions?.size ?? 0;
   if (statistic === "direct") return direct;
   if (statistic === "total") return total;
+  if (statistic === "frequency") return frequency;
   return total;
 }
 
+function getAverageVolumeStatistic(counts, weeks, statistic) {
+  return weeks > 0 ? getVolumeStatistic(counts, weeks, statistic) / weeks : 0;
+}
+
 function formatSetValue(value, statistic) {
-  return `${value.toFixed(1)} sets`;
+  return statistic === "frequency" ? `${value.toFixed(1)} sessions/week` : `${value.toFixed(1)} sets/week`;
 }
 
 function renderWeeklyLineChart(container, series, label, tooltipElement, statistic) {

@@ -62,6 +62,10 @@ muscle groups and direct or total sets to compare in the selected Volume period.
 Each selected muscle has a
 different colour and every data point reveals its value on hover or focus.
 
+The same chart can also show muscle-group training frequency: the number of
+workout sessions per week in which a muscle received a logged direct or
+indirect set.
+
 The Volume page includes an interactive front-and-back body map. Its colour
 intensity and hover values show average total sets per week for the selected
 period.

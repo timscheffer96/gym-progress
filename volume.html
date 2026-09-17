@@ -17,7 +17,7 @@
         </nav>
         <p class="eyebrow">Strong workout analysis</p>
         <h1>Volume</h1>
-        <p class="intro">Review sessions, muscle-group volume, estimated-1RM PRs, and deload history for a period you choose.</p>
+        <p class="intro">Review sessions, muscle-group volume and training frequency, and deload history for a period you choose.</p>
       </header>
 
       <section id="no-import" class="upload-panel" hidden>
@@ -46,17 +46,18 @@
         </div>
 
         <section class="summary-section" aria-labelledby="volume-title">
-          <h2 id="volume-title">Muscle-group volume</h2>
-          <p>Direct volume counts a primary-muscle set as 1. Total volume counts direct sets plus half of each indirect set.</p>
+          <h2 id="volume-title">Muscle-group volume and frequency</h2>
+          <p>Direct volume counts a primary-muscle set as 1. Total volume counts direct sets plus half of each indirect set. Frequency counts a muscle once for each workout session in which it received a logged direct or indirect set.</p>
           <div class="chart-controls">
             <label for="volume-muscle-select">Muscles to compare <select id="volume-muscle-select" multiple size="5"></select></label>
             <label for="volume-stat-select">Show <select id="volume-stat-select">
               <option value="direct">Direct sets</option>
               <option value="total">Total sets</option>
+              <option value="frequency">Training frequency</option>
             </select></label>
           </div>
           <p id="volume-chart-value" class="chart-value" aria-live="polite"></p>
-          <h3 class="weekly-chart-title">Weekly trend</h3>
+          <h3 id="weekly-chart-title" class="weekly-chart-title">Weekly trend</h3>
           <div id="volume-line-chart" class="metric-chart"></div>
           <div id="volume-line-legend" class="line-legend" aria-label="Selected muscle line colours"></div>
           <p id="volume-line-tooltip" class="chart-tooltip" aria-live="polite">Hover or focus a data point to see its value.</p>

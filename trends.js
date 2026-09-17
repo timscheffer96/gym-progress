@@ -115,15 +115,19 @@ function getTrendPrs(rows, startDate, endDate) {
 
   return [...periodBest.entries()]
     .filter(([exercise, result]) => priorBest.has(exercise) && result.estimate > priorBest.get(exercise))
-    .map(([exercise, result]) => ({ exercise, ...result, previous: priorBest.get(exercise), improvement: result.estimate - priorBest.get(exercise) }))
-    .sort((first, second) => second.improvement - first.improvement)
+    .map(([exercise, result]) => {
+      const previous = priorBest.get(exercise);
+      const improvement = result.estimate - previous;
+      return { exercise, ...result, previous, improvement, percentageIncrease: improvement / previous * 100 };
+    })
+    .sort((first, second) => second.percentageIncrease - first.percentageIncrease || second.improvement - first.improvement)
     .slice(0, 10);
 }
 
 function showTrendPrTable(prs, startDate, endDate) {
   trendPrTableBody.replaceChildren();
   if (prs.length === 0) {
-    appendTrendPrRow(["No estimated-1RM PRs in this period", "—", "—", "—", "—"]);
+    appendTrendPrRow(["No estimated-1RM PRs in this period", "—", "—", "—", "—", "—"]);
     return;
   }
 
@@ -140,7 +144,7 @@ function showTrendPrTable(prs, startDate, endDate) {
     exerciseCell.append(liftLink);
     row.append(exerciseCell);
 
-    for (const value of [pr.date, `${pr.estimate.toFixed(1)} kg`, `${pr.previous.toFixed(1)} kg`, `+${pr.improvement.toFixed(1)} kg`]) {
+    for (const value of [pr.date, `${pr.estimate.toFixed(1)} kg`, `${pr.previous.toFixed(1)} kg`, `+${pr.improvement.toFixed(1)} kg`, `+${pr.percentageIncrease.toFixed(1)}%`]) {
       const cell = document.createElement("td");
       cell.textContent = value;
       row.append(cell);
