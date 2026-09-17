@@ -72,6 +72,30 @@ select {
   font: inherit;
 }
 
+.period-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.period-presets button {
+  padding: 0.55rem 0.75rem;
+  color: #344054;
+  background: #ffffff;
+  border: 1px solid #aeb8c9;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.85rem;
+}
+
+.period-presets button[aria-pressed="true"] {
+  color: #ffffff;
+  background: #3e55c7;
+  border-color: #3e55c7;
+}
+
 h1, h2, h3, p {
   margin-top: 0;
 }

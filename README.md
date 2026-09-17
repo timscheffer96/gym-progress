@@ -65,6 +65,9 @@ The Summary page includes an interactive front-and-back body map. Its colour
 intensity and hover values show average total sets per week for the selected
 period.
 
+Summary also provides quick period controls for the last 4 weeks, last 12
+weeks, last 6 months, and last year of the imported data.
+
 ## Metric definitions
 
 In this app, **volume** means the number of logged hard sets. We assume that

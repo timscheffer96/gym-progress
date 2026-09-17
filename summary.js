@@ -12,8 +12,11 @@ const prTableBody = document.querySelector("#pr-table-body");
 const deloadDescription = document.querySelector("#deload-description");
 const bodyMap = document.querySelector("#body-map");
 const bodyMapStatus = document.querySelector("#body-map-status");
+const periodPresetButtons = document.querySelectorAll("[data-period]");
 let summaryRows = [];
 let bodyMapAverages = new Map();
+let earliestSummaryDate = "";
+let latestSummaryDate = "";
 
 initialiseSummaryPage();
 initialiseBodyMap();
@@ -29,6 +32,8 @@ function initialiseSummaryPage() {
   const dates = summaryRows.map((row) => row.Date.slice(0, 10)).filter(Boolean).sort();
   const firstDate = dates[0];
   const lastDate = dates.at(-1);
+  earliestSummaryDate = firstDate;
+  latestSummaryDate = lastDate;
   for (const input of [summaryStartDate, summaryEndDate]) {
     input.min = firstDate;
     input.max = lastDate;
@@ -37,6 +42,9 @@ function initialiseSummaryPage() {
   summaryStartDate.value = [firstDate, dateDaysBeforeSummary(lastDate, 83)].sort().at(-1);
   summaryStartDate.addEventListener("change", renderSummary);
   summaryEndDate.addEventListener("change", renderSummary);
+  for (const button of periodPresetButtons) {
+    button.addEventListener("click", () => applySummaryPreset(button.dataset.period));
+  }
   summaryContent.hidden = false;
   renderSummary();
 }
@@ -57,6 +65,7 @@ function renderSummary() {
   const deload = getMostRecentDeload(summaryRows, endDate);
 
   summaryStatus.textContent = `${startDate} to ${endDate}`;
+  updatePresetState(startDate, endDate);
   document.querySelector("#session-count").textContent = getSessionCount(periodRows);
   document.querySelector("#period-week-count").textContent = numberOfWeeksInSummaryPeriod(startDate, endDate).toFixed(1);
   document.querySelector("#pr-count").textContent = prs.length;
@@ -66,6 +75,35 @@ function renderSummary() {
   renderFourWeekComparison(endDate);
   renderPrTable(prs, startDate, endDate);
   renderDeload(deload);
+}
+
+function applySummaryPreset(preset) {
+  summaryEndDate.value = latestSummaryDate;
+  summaryStartDate.value = getPresetStartDate(preset);
+  renderSummary();
+}
+
+function updatePresetState(startDate, endDate) {
+  for (const button of periodPresetButtons) {
+    const expectedStart = getPresetStartDate(button.dataset.period);
+    button.setAttribute("aria-pressed", String(startDate === expectedStart && endDate === latestSummaryDate));
+  }
+}
+
+function getPresetStartDate(preset) {
+  let startDate = latestSummaryDate;
+
+  if (preset === "4-weeks") {
+    startDate = dateDaysBeforeSummary(latestSummaryDate, 27);
+  } else if (preset === "12-weeks") {
+    startDate = dateDaysBeforeSummary(latestSummaryDate, 83);
+  } else if (preset === "6-months") {
+    startDate = dateMonthsBeforeSummary(latestSummaryDate, 6);
+  } else if (preset === "1-year") {
+    startDate = dateMonthsBeforeSummary(latestSummaryDate, 12);
+  }
+
+  return [earliestSummaryDate, startDate].sort().at(-1);
 }
 
 function initialiseBodyMap() {
@@ -316,5 +354,15 @@ function isInSummaryPeriod(dateTime, startDate, endDate) {
 function dateDaysBeforeSummary(dateString, days) {
   const date = new Date(`${dateString}T12:00:00`);
   date.setDate(date.getDate() - days);
+  return date.toISOString().slice(0, 10);
+}
+
+function dateMonthsBeforeSummary(dateString, months) {
+  const date = new Date(`${dateString}T12:00:00`);
+  const originalDay = date.getDate();
+  date.setDate(1);
+  date.setMonth(date.getMonth() - months);
+  const lastDayOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+  date.setDate(Math.min(originalDay, lastDayOfMonth));
   return date.toISOString().slice(0, 10);
 }
