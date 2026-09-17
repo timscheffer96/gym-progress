@@ -14,10 +14,13 @@ const volumeMuscleSelect = document.querySelector("#volume-muscle-select");
 const volumeStatSelect = document.querySelector("#volume-stat-select");
 const volumeChartValue = document.querySelector("#volume-chart-value");
 const volumeLineChart = document.querySelector("#volume-line-chart");
+const volumeLineLegend = document.querySelector("#volume-line-legend");
+const volumeLineTooltip = document.querySelector("#volume-line-tooltip");
 const comparisonMuscleSelect = document.querySelector("#comparison-muscle-select");
 const comparisonStatSelect = document.querySelector("#comparison-stat-select");
 const comparisonChartValue = document.querySelector("#comparison-chart-value");
 const comparisonLineChart = document.querySelector("#comparison-line-chart");
+const comparisonLineTooltip = document.querySelector("#comparison-line-tooltip");
 let summaryRows = [];
 let bodyMapAverages = new Map();
 let summaryPeriodPresets;
@@ -159,13 +162,18 @@ function getMuscleVolume(rows) {
 
 function renderVolumeChart(volume, weeksInPeriod, weeklyVolume) {
   const muscles = [...volume.keys()].sort();
-  setMuscleOptions(volumeMuscleSelect, muscles);
+  setMuscleOptions(volumeMuscleSelect, muscles, true);
   const statistic = volumeStatSelect.value;
-  const selectedMuscle = volumeMuscleSelect.value;
+  const selectedMuscles = [...volumeMuscleSelect.selectedOptions].map((option) => option.value);
   const entries = muscles.map((muscle) => ({ muscle, value: getVolumeStatistic(volume.get(muscle), weeksInPeriod, statistic) }));
-  const selectedValue = entries.find((entry) => entry.muscle === selectedMuscle)?.value ?? 0;
-  volumeChartValue.textContent = `${selectedMuscle}: ${formatSetValue(selectedValue, statistic)}`;
-  renderWeeklyLineChart(volumeLineChart, getWeeklySeries(weeklyVolume, selectedMuscle, statistic), `${selectedMuscle} weekly volume trend`);
+  const selectedValues = selectedMuscles.map((muscle) => {
+    const value = entries.find((entry) => entry.muscle === muscle)?.value ?? 0;
+    return `${muscle}: ${formatSetValue(value, statistic)}`;
+  });
+  volumeChartValue.textContent = selectedValues.join(" · ");
+  const series = selectedMuscles.map((muscle) => ({ name: muscle, points: getWeeklySeries(weeklyVolume, muscle, statistic) }));
+  renderLineLegend(series);
+  renderWeeklyLineChart(volumeLineChart, series, "Selected muscle weekly volume trend", volumeLineTooltip, statistic);
 }
 
 function renderFourWeekComparison(startDate, endDate, weeklyVolume) {
@@ -184,7 +192,7 @@ function renderFourWeekComparison(startDate, endDate, weeklyVolume) {
   const recent = getVolumeStatistic(recentVolume.get(muscle), 4, statistic);
   const change = recent - prior;
   comparisonChartValue.textContent = `${muscle}: latest ${formatSetValue(recent, statistic)} · prior ${formatSetValue(prior, statistic)} · ${change >= 0 ? "+" : ""}${formatSetValue(change, statistic)}`;
-  renderWeeklyLineChart(comparisonLineChart, getWeeklySeries(weeklyVolume, muscle, statistic), `${muscle} selected-period comparison trend`);
+  renderWeeklyLineChart(comparisonLineChart, [{ name: muscle, points: getWeeklySeries(weeklyVolume, muscle, statistic) }], `${muscle} selected-period comparison trend`, comparisonLineTooltip, statistic);
 }
 
 function getWeeklyMuscleVolume(startDate, endDate) {
@@ -234,8 +242,19 @@ function getWeeklySeries(weeklyVolume, muscle, statistic) {
   return [...weeklyVolume.entries()].map(([week, volume]) => ({ week, value: getVolumeStatistic(volume.get(muscle), 1, statistic) }));
 }
 
-function setMuscleOptions(select, muscles) {
-  const previousValue = select.value;
+function renderLineLegend(series) {
+  volumeLineLegend.replaceChildren();
+  series.forEach((item, index) => {
+    const legendItem = document.createElement("span");
+    const swatch = document.createElement("i");
+    swatch.style.background = getSeriesColor(index);
+    legendItem.append(swatch, document.createTextNode(item.name));
+    volumeLineLegend.append(legendItem);
+  });
+}
+
+function setMuscleOptions(select, muscles, allowMultiple = false) {
+  const previousValues = allowMultiple ? [...select.selectedOptions].map((option) => option.value) : [select.value];
   select.replaceChildren();
   for (const muscle of muscles) {
     const option = document.createElement("option");
@@ -243,7 +262,12 @@ function setMuscleOptions(select, muscles) {
     option.textContent = muscle;
     select.append(option);
   }
-  select.value = muscles.includes(previousValue) ? previousValue : muscles.includes("chest") ? "chest" : muscles[0];
+  const selectedValues = previousValues.filter((value) => muscles.includes(value));
+  const fallback = muscles.includes("chest") ? "chest" : muscles[0];
+  const valuesToSelect = selectedValues.length > 0 ? selectedValues : [fallback];
+  for (const option of select.options) {
+    option.selected = valuesToSelect.includes(option.value);
+  }
 }
 
 function getVolumeStatistic(counts, weeks, statistic) {
@@ -259,14 +283,14 @@ function formatSetValue(value, statistic) {
   return statistic.endsWith("average") ? `${value.toFixed(1)} sets/week` : `${value.toFixed(1)} sets`;
 }
 
-function renderWeeklyLineChart(container, series, label) {
+function renderWeeklyLineChart(container, series, label, tooltipElement, statistic) {
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   const width = 720;
   const height = 220;
   const padding = { top: 20, right: 20, bottom: 38, left: 48 };
   const plotWidth = width - padding.left - padding.right;
   const plotHeight = height - padding.top - padding.bottom;
-  const highest = Math.max(...series.map((point) => point.value), 1);
+  const highest = Math.max(...series.flatMap((line) => line.points.map((point) => point.value)), 1);
   const maximum = Math.ceil(highest * 1.1);
   svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
   svg.setAttribute("role", "img");
@@ -275,22 +299,35 @@ function renderWeeklyLineChart(container, series, label) {
   appendChartSvg(svg, "line", { x1: padding.left, y1: height - padding.bottom, x2: width - padding.right, y2: height - padding.bottom, class: "metric-chart-axis" });
   appendChartSvg(svg, "text", { x: padding.left - 7, y: padding.top + 4, class: "metric-chart-value" }, maximum.toFixed(1));
   appendChartSvg(svg, "text", { x: padding.left - 7, y: height - padding.bottom + 4, class: "metric-chart-value" }, "0");
-  appendChartSvg(svg, "text", { x: padding.left, y: height - 10, class: "metric-chart-label" }, series[0].week);
-  appendChartSvg(svg, "text", { x: width - padding.right, y: height - 10, class: "metric-chart-label", "text-anchor": "end" }, series.at(-1).week);
+  const weeks = series[0].points;
+  appendChartSvg(svg, "text", { x: padding.left, y: height - 10, class: "metric-chart-label" }, weeks[0].week);
+  appendChartSvg(svg, "text", { x: width - padding.right, y: height - 10, class: "metric-chart-label", "text-anchor": "end" }, weeks.at(-1).week);
 
-  const coordinates = series.map((point, index) => ({
-    ...point,
-    x: padding.left + (index / Math.max(series.length - 1, 1)) * plotWidth,
-    y: padding.top + ((maximum - point.value) / maximum) * plotHeight,
-  }));
-  appendChartSvg(svg, "polyline", { points: coordinates.map(({ x, y }) => `${x},${y}`).join(" "), class: "metric-chart-line" });
-  for (const point of coordinates) {
-    const circle = appendChartSvg(svg, "circle", { cx: point.x, cy: point.y, r: 4, class: "metric-chart-point", tabindex: 0 });
-    const title = document.createElementNS("http://www.w3.org/2000/svg", "title");
-    title.textContent = `Week beginning ${point.week}: ${point.value.toFixed(1)} sets`;
-    circle.append(title);
-  }
+  series.forEach((line, lineIndex) => {
+    const color = getSeriesColor(lineIndex);
+    const coordinates = line.points.map((point, index) => ({
+      ...point,
+      x: padding.left + (index / Math.max(line.points.length - 1, 1)) * plotWidth,
+      y: padding.top + ((maximum - point.value) / maximum) * plotHeight,
+    }));
+    appendChartSvg(svg, "polyline", { points: coordinates.map(({ x, y }) => `${x},${y}`).join(" "), class: "metric-chart-line", stroke: color });
+    for (const point of coordinates) {
+      const circle = appendChartSvg(svg, "circle", { cx: point.x, cy: point.y, r: 4, fill: color, tabindex: 0 });
+      const pointText = `${line.name} · week beginning ${point.week}: ${formatSetValue(point.value, statistic)}`;
+      const title = document.createElementNS("http://www.w3.org/2000/svg", "title");
+      title.textContent = pointText;
+      circle.append(title);
+      circle.addEventListener("mouseenter", () => { tooltipElement.textContent = pointText; });
+      circle.addEventListener("focus", () => { tooltipElement.textContent = pointText; });
+      circle.addEventListener("mouseleave", () => { tooltipElement.textContent = "Hover or focus a data point to see its value."; });
+      circle.addEventListener("blur", () => { tooltipElement.textContent = "Hover or focus a data point to see its value."; });
+    }
+  });
   container.replaceChildren(svg);
+}
+
+function getSeriesColor(index) {
+  return ["#3e55c7", "#d14d72", "#16815d", "#d4751e", "#7652c8", "#147a9c"][index % 6];
 }
 
 function appendChartSvg(svg, tagName, attributes, text = "") {

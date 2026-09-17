@@ -62,8 +62,9 @@ Notable estimated-1RM PRs appear on Lift trends and link to the selected
 exercise chart while preserving the current date range.
 
 The Volume volume and four-week comparison views use interactive weekly line
-charts. Choose a muscle group and the direct/total or weekly-average statistic
-to inspect for the selected Volume period.
+charts. Choose one or more muscle groups and the direct/total or weekly-average
+statistic to compare in the selected Volume period. Each selected muscle has a
+different colour and every data point reveals its value on hover or focus.
 
 The Volume page includes an interactive front-and-back body map. Its colour
 intensity and hover values show average total sets per week for the selected

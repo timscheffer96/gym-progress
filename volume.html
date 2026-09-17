@@ -47,7 +47,7 @@
           <h2 id="volume-title">Muscle-group volume</h2>
           <p>Direct volume counts a primary-muscle set as 1. Total volume counts direct sets plus half of each indirect set.</p>
           <div class="chart-controls">
-            <label for="volume-muscle-select">Highlight muscle <select id="volume-muscle-select"></select></label>
+            <label for="volume-muscle-select">Muscles to compare <select id="volume-muscle-select" multiple size="5"></select></label>
             <label for="volume-stat-select">Show <select id="volume-stat-select">
               <option value="direct">Direct sets</option>
               <option value="total">Total sets</option>
@@ -58,6 +58,8 @@
           <p id="volume-chart-value" class="chart-value" aria-live="polite"></p>
           <h3 class="weekly-chart-title">Weekly trend</h3>
           <div id="volume-line-chart" class="metric-chart"></div>
+          <div id="volume-line-legend" class="line-legend" aria-label="Selected muscle line colours"></div>
+          <p id="volume-line-tooltip" class="chart-tooltip" aria-live="polite">Hover or focus a data point to see its value.</p>
 
           <div class="body-map-section">
             <h3>Average total sets per week</h3>
@@ -109,6 +111,7 @@
           <p id="comparison-chart-value" class="chart-value" aria-live="polite"></p>
           <h3 class="weekly-chart-title">Weekly trend in selected period</h3>
           <div id="comparison-line-chart" class="metric-chart"></div>
+          <p id="comparison-line-tooltip" class="chart-tooltip" aria-live="polite">Hover or focus a data point to see its value.</p>
         </section>
 
         <section class="summary-section deload-section" aria-labelledby="deload-title">
