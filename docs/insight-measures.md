@@ -223,3 +223,5 @@ When changing a formula or threshold:
 - 2026-09-18: Implemented the initial rules with a 28-day comparison-gap cap,
   eight-pair minimum for the recovery proxy, and complete-week gating for
   weekly scores.
+- 2026-09-18: Added the user-facing Info page, with adjustable thresholds read
+  directly from the centralized Insights and Coach rule files.

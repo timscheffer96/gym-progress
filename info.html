@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Info · Gym Progress</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="app info-page">
+      <header>
+        <nav class="site-nav" aria-label="Main navigation">
+          <a href="index.html">Dashboard</a>
+          <a href="insights.html">Insights</a>
+          <a href="trends.html">Lift trends</a>
+          <a href="volume.html">Volume</a>
+          <a href="coach.html">Coach</a>
+          <a href="info.html" aria-current="page">Info</a>
+        </nav>
+        <p class="eyebrow">Methods and definitions</p>
+        <h1>How it works</h1>
+        <p class="intro">Every measure in the app, explained in plain language—including its formula, evidence requirements, and limitations.</p>
+      </header>
+
+      <aside class="info-notice">
+        <strong>Transparency principle</strong>
+        <p>These measures describe patterns in the imported log. They do not diagnose recovery, prescribe a universal training target, or know your goals unless the data itself establishes something.</p>
+      </aside>
+
+      <nav class="info-toc" aria-label="Information sections">
+        <a href="#foundations">Foundations</a>
+        <a href="#volume">Volume and frequency</a>
+        <a href="#performance">Performance</a>
+        <a href="#insight-scores">Insight scores</a>
+        <a href="#coach">Coach logic</a>
+        <a href="#limitations">Limitations</a>
+      </nav>
+
+      <section id="foundations" class="info-section">
+        <p class="panel-kicker">Start here</p>
+        <h2>Foundations</h2>
+        <div class="info-grid">
+          <article class="info-card">
+            <h3>Logged set</h3>
+            <p>Each imported Strong set is treated as one hard set. The app assumes it was performed close enough to failure to count.</p>
+            <div class="info-formula">Volume = number of logged sets</div>
+            <p>The Insights headline “Total volume” is this whole-program logged-set count. Muscle-group total volume is the separate weighted measure explained below.</p>
+            <p class="info-limit">Weight × reps, sometimes called tonnage, is deliberately not used as the volume measure.</p>
+          </article>
+          <article class="info-card">
+            <h3>Training session</h3>
+            <p>A session is a unique combination of the Strong workout identifier and date. Multiple exercises and sets in one workout still count as one session.</p>
+            <div class="info-formula">Session key = date + workout number</div>
+          </article>
+          <article class="info-card">
+            <h3>Weeks and selected periods</h3>
+            <p>Weekly charts group data Monday through Sunday. Headline totals use the exact selected dates; weekly scores use only complete Monday–Sunday weeks so every compared week contains seven days.</p>
+            <p class="info-limit">Partial edge weeks are excluded from Consistency, Opportunity, Efficiency, Recovery proxy, and plateau calculations on Insights.</p>
+          </article>
+          <article class="info-card">
+            <h3>Exercise-to-muscle mapping</h3>
+            <p><code>exercise-muscles.js</code> assigns primary and secondary muscles to each exercise. Unmapped exercises remain in workout totals but are excluded from muscle-group calculations.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="volume" class="info-section">
+        <p class="panel-kicker">Exposure measures</p>
+        <h2>Volume and frequency</h2>
+        <div class="info-grid">
+          <article class="info-card">
+            <h3>Direct muscle volume</h3>
+            <p>One logged set adds one direct set to every primary muscle mapped to that exercise.</p>
+            <p class="info-example">Example: one barbell bench-press set adds one direct chest set.</p>
+          </article>
+          <article class="info-card">
+            <h3>Indirect muscle volume</h3>
+            <p>One logged set adds one indirect set to every secondary muscle. Direct and indirect counts remain separate so supporting work is visible without being treated as primary work.</p>
+          </article>
+          <article class="info-card">
+            <h3>Weighted total volume</h3>
+            <p>The body map and total-volume muscle views combine direct and indirect work using a half-set contribution for secondary muscles.</p>
+            <div class="info-formula">Weighted total = direct sets + (0.5 × indirect sets)</div>
+          </article>
+          <article class="info-card">
+            <h3>Average sets per week</h3>
+            <p>The total sets inside the selected date range are divided by the exact number of calendar weeks represented by that range.</p>
+            <div class="info-formula">Average/week = sets ÷ (selected days ÷ 7)</div>
+          </article>
+          <article class="info-card">
+            <h3>Muscle frequency on Volume</h3>
+            <p>A muscle is counted at most once per workout when it received any mapped direct or indirect set. The period figure is unique exposed sessions divided by weeks.</p>
+            <div class="info-formula">Frequency = exposed workout sessions ÷ weeks</div>
+          </article>
+          <article class="info-card">
+            <h3>Direct frequency in Opportunity</h3>
+            <p>Opportunity is stricter: it counts only sessions containing at least one exercise for which the muscle is primary. Indirect-only exposure does not reduce the frequency-gap component.</p>
+          </article>
+          <article class="info-card">
+            <h3>Deload heuristic</h3>
+            <p>A completed Monday–Sunday week qualifies when it contains training, but its direct mapped set count is at most 50% of the preceding four completed weeks’ average.</p>
+            <p class="info-limit">This is a log pattern—not proof that the week was planned as a deload or that recovery was needed.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="performance" class="info-section">
+        <p class="panel-kicker">Load and reps</p>
+        <h2>Performance measures</h2>
+        <div class="info-grid">
+          <article class="info-card info-card-wide">
+            <h3>Estimated one-repetition maximum (e1RM)</h3>
+            <p>The app uses the Epley formula for sets with a positive weight and rep count. It estimates—not measures—the maximum load for one repetition.</p>
+            <div class="info-formula">e1RM = weight × (1 + reps ÷ 30)</div>
+            <p>The weekly trend uses the highest estimate recorded for that exercise in each week. Different rep ranges can produce differently reliable estimates.</p>
+          </article>
+          <article class="info-card">
+            <h3>Comparable observations</h3>
+            <p>Performance comparisons use the same exercise and require median rep counts to differ by no more than <span data-info-rule="comparableReps"></span> reps.</p>
+            <p class="info-limit">This reduces misleading comparisons between very different rep-range phases.</p>
+          </article>
+          <article class="info-card">
+            <h3>Notable estimated-1RM PR</h3>
+            <p>The best e1RM inside the selected period must exceed the best estimate logged before that period for the same exercise.</p>
+            <div class="info-formula">Percentage increase = (new best − previous best) ÷ previous best × 100</div>
+            <p>PRs are sorted by percentage increase.</p>
+          </article>
+          <article class="info-card">
+            <h3>Lift frequency</h3>
+            <p>Lift workouts count unique sessions containing the selected exercise. Weeks trained count Monday–Sunday weeks containing at least one such session.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="insight-scores" class="info-section">
+        <p class="panel-kicker">Insights page</p>
+        <h2>Scores and signals</h2>
+
+        <details class="info-measure" open>
+          <summary><span>Consistency score</span><small>Whole program · 0–100%</small></summary>
+          <div class="info-measure-content">
+            <p>Consistency measures how steady weekly session frequency was—not whether the number of sessions was high enough. One session every week can therefore be perfectly consistent.</p>
+            <div class="info-formula">mean = average sessions/week<br />MAD = average absolute distance from that mean<br />score = 100 × clamp(1 − (MAD ÷ max(mean, 1)) ÷ <span data-info-rule="consistencyScale"></span>, 0, 1)</div>
+            <dl><dt>Minimum evidence</dt><dd><span data-info-rule="consistencyWeeks"></span> complete weeks with activity.</dd><dt>Displayed evidence</dt><dd>Average sessions/week and the typical weekly deviation.</dd></dl>
+          </div>
+        </details>
+
+        <details class="info-measure" open>
+          <summary><span>Opportunity score</span><small>Per muscle · 0–100%</small></summary>
+          <div class="info-measure-content">
+            <p>This score asks whether a muscle group’s current setup contains a clear reason to review it. A high score does not automatically mean “add volume.” A numeric score is withheld until the stability component has enough comparable performance evidence.</p>
+            <div class="info-score-parts">
+              <article><strong>Up to <span data-info-rule="volumePoints"></span> points</strong><span>Direct-volume gap</span><code><span data-info-rule="volumePoints"></span> × clamp((<span data-info-rule="volumeAnchor"></span> − direct sets/week) ÷ <span data-info-rule="volumeAnchor"></span>, 0, 1)</code></article>
+              <article><strong>Up to <span data-info-rule="frequencyPoints"></span> points</strong><span>Direct-frequency gap</span><code><span data-info-rule="frequencyPoints"></span> × clamp((<span data-info-rule="frequencyAnchor"></span> − direct sessions/week) ÷ <span data-info-rule="frequencyAnchor"></span>, 0, 1)</code></article>
+              <article><strong>Up to <span data-info-rule="stabilityPoints"></span> points</strong><span>Stability signal</span><code><span data-info-rule="stabilityPoints"></span> × clamp((<span data-info-rule="stabilityAnchor"></span> − recovery proxy) ÷ 40, 0, 1)</code></article>
+            </div>
+            <p class="info-limit">The <span data-info-rule="volumeAnchor"></span>-set and <span data-info-rule="frequencyAnchor"></span>-session anchors are review triggers, not universal minimums. The small top tile shows the highest muscle score; the large tile lets you inspect each muscle.</p>
+          </div>
+        </details>
+
+        <details class="info-measure" open>
+          <summary><span>Performance-stability recovery proxy</span><small>Whole program · 0–100%</small></summary>
+          <div class="info-measure-content">
+            <p>For adjacent session-best observations of the same exercise, the current e1RM is considered maintained when it is no more than <span data-info-rule="recoveryTolerance"></span>% below the prior estimate.</p>
+            <div class="info-formula">Successful repeat = current e1RM ≥ (1 − <span data-info-rule="recoveryToleranceDecimal"></span>) × prior e1RM<br />score = successful comparable repeats ÷ all comparable repeats × 100</div>
+            <dl><dt>Minimum evidence</dt><dd><span data-info-rule="recoveryPairs"></span> comparable pairs.</dd><dt>Gap limit</dt><dd>Pairs more than <span data-info-rule="recoveryGap"></span> days apart are excluded.</dd></dl>
+            <p class="info-warning">This is not physiological recovery. The Strong export does not establish sleep, nutrition, stress, soreness, fatigue, injury, or readiness to train.</p>
+          </div>
+        </details>
+
+        <details class="info-measure">
+          <summary><span>Exercise efficiency score</span><small>Per exercise · 0–100</small></summary>
+          <div class="info-measure-content">
+            <p>Efficiency describes the observed performance change relative to the amount of that exercise logged. It is not a measure of effort, genetics, or overall program quality.</p>
+            <div class="info-formula">change% = first-three median e1RM → last-three median e1RM<br />progress rate = 4 × change% ÷ (complete weeks × max(sets/week, <span data-info-rule="efficiencyFloor"></span>))<br />score = clamp(<span data-info-rule="efficiencyNeutral"></span> + <span data-info-rule="efficiencyScale"></span> × progress rate, 0, 100)</div>
+            <dl><dt>Minimum evidence</dt><dd><span data-info-rule="performanceSessions"></span> sessions across <span data-info-rule="performanceWeeks"></span> weeks at a comparable rep range.</dd><dt>Meaning of 50</dt><dd>Little net observed change; it is not a pass/fail mark.</dd></dl>
+          </div>
+        </details>
+
+        <details class="info-measure">
+          <summary><span>Possible plateau</span><small>Per exercise · cautious signal</small></summary>
+          <div class="info-measure-content">
+            <p>The median e1RM of the most recent three comparable sessions is compared with the preceding three. A possible plateau requires the change to stay within ±<span data-info-rule="plateauTolerance"></span>%.</p>
+            <p>A gap longer than <span data-info-rule="recoveryGap"></span> days or a set-count change of at least <span data-info-rule="plateauDowngrade"></span>% downgrades the signal to “Watch.” Sparse history and rep-range changes are not classified as plateaus.</p>
+          </div>
+        </details>
+      </section>
+
+      <section id="coach" class="info-section">
+        <p class="panel-kicker">Coach page</p>
+        <h2>Coaching review logic</h2>
+        <div class="info-grid">
+          <article class="info-card">
+            <h3>Review period</h3>
+            <p>The Coach uses the latest imported workout as the endpoint and reviews up to <span data-info-rule="coachWeeks"></span> rolling weeks. Days after the latest import are never treated as missed training.</p>
+          </article>
+          <article class="info-card">
+            <h3>Sustained regularity</h3>
+            <p>A positive consistency signal needs at least <span data-info-rule="regularityWeeks"></span> covered weeks, activity in at least <span data-info-rule="activeWeekShare"></span>% of them, and no substantial recent frequency reduction.</p>
+          </article>
+          <article class="info-card">
+            <h3>Progression signal</h3>
+            <p>Requires at least <span data-info-rule="coachPerformanceSessions"></span> exercise sessions over <span data-info-rule="coachPerformanceWeeks"></span> weeks. It recognizes sustained e1RM improvement of at least <span data-info-rule="progressionPercent"></span>%, one more rep at similar load, or at least <span data-info-rule="loadIncreasePercent"></span>% more load at comparable reps.</p>
+          </article>
+          <article class="info-card">
+            <h3>Coach possible plateau</h3>
+            <p>The recent-three versus preceding-three median e1RM change must be within ±<span data-info-rule="coachPlateau"></span>%, without meaningful load or rep progress. It is always phrased as possible, never confirmed.</p>
+          </article>
+          <article class="info-card">
+            <h3>Frequency and volume changes</h3>
+            <p>The Coach compares two complete <span data-info-rule="comparisonWeeks"></span>-week blocks. Changes of at least <span data-info-rule="frequencyReduction"></span>% in session frequency or <span data-info-rule="volumeChange"></span>% in direct volume can trigger review language.</p>
+          </article>
+          <article class="info-card">
+            <h3>Confidence labels</h3>
+            <dl><dt>High</dt><dd>At least <span data-info-rule="highConfidenceWeeks"></span> weeks and <span data-info-rule="highConfidenceSessions"></span> observations.</dd><dt>Medium</dt><dd>At least <span data-info-rule="mediumConfidenceWeeks"></span> weeks and <span data-info-rule="mediumConfidenceSessions"></span> observations.</dd><dt>Preliminary</dt><dd>Anything below those thresholds.</dd></dl>
+          </article>
+        </div>
+      </section>
+
+      <section id="limitations" class="info-section">
+        <p class="panel-kicker">Boundaries</p>
+        <h2>What the data cannot tell us</h2>
+        <div class="info-limitations">
+          <p><strong>Effort:</strong> every logged set is assumed to count, but missing RPE means proximity to failure is unknown.</p>
+          <p><strong>Recovery:</strong> performance stability cannot establish fatigue, sleep quality, stress, nutrition, soreness, injury, or readiness.</p>
+          <p><strong>Goals and schedule:</strong> the app does not infer a target muscle, intended training frequency, or planned routine from past averages.</p>
+          <p><strong>Causation:</strong> simultaneous changes in volume and performance are correlations in the log; they do not prove one caused the other.</p>
+          <p><strong>Exercise changes:</strong> estimates are never compared across different exercise names, and a new variation may have too little history to score.</p>
+          <p><strong>Missing data:</strong> unmapped exercises and incomplete weeks reduce coverage and are reported instead of silently filled in.</p>
+        </div>
+      </section>
+
+      <footer class="info-footer">
+        <p>Measure documentation version <strong id="measure-doc-version"></strong>. Formula details are also maintained in <a href="docs/insight-measures.md">the technical measure specification</a>.</p>
+      </footer>
+    </main>
+
+    <script src="insights-rules.js"></script>
+    <script src="coach-rules.js"></script>
+    <script src="info.js"></script>
+  </body>
+</html>

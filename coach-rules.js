@@ -2,6 +2,7 @@
 
 // Transparent first-version coaching rules. Adjust these in one place as the
 // product evolves; they are heuristics, not medical or training prescriptions.
+// When a rule changes, update info.html and the relevant README/specification.
 const coachRules = Object.freeze({
   reviewDays: 84,
   comparisonDays: 28,

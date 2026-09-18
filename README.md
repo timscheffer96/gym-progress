@@ -95,6 +95,18 @@ The `insights.html` page presents these measures in a compact dashboard. Its
 assumptions and thresholds remain documented and centralized so they can be
 reviewed as the product evolves.
 
+## Measure documentation maintenance
+
+The user-facing `info.html` page explains every displayed measure and reads
+adjustable threshold values directly from `insights-rules.js` and
+`coach-rules.js`. Whenever a formula, threshold, evidence gate, or metric name
+changes, update all of the following in the same commit:
+
+1. The calculation and its centralized rule value.
+2. `info.html` and the documentation version in `insights-rules.js`.
+3. `docs/insight-measures.md`, including its change log when applicable.
+4. The Insights smoke test if the measure's data requirements changed.
+
 ## Metric definitions
 
 In this app, **volume** means the number of logged hard sets. We assume that

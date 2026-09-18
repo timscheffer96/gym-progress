@@ -2,7 +2,10 @@
 
 // First-version insight rules. These are transparent product heuristics, not
 // universal training targets or medical/recovery claims.
+// When a measure changes, update info.html, docs/insight-measures.md, the
+// documentationVersion below, and the change log in the specification.
 const insightRules = Object.freeze({
+  documentationVersion: "2026-09-18",
   defaultPeriodDays: 84,
   minimumCompleteWeeksForConsistency: 4,
   consistencyDeviationScale: 0.75,
