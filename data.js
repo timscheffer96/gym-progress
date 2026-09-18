@@ -170,10 +170,100 @@ function parseDelimitedText(text, delimiter) {
 }
 
 function saveImportedRows(rows) {
-  localStorage.setItem(importedRowsStorageKey, JSON.stringify(rows));
+  const compactImport = JSON.stringify(encodeImportedRows(rows));
+  const legacyImport = localStorage.getItem(legacyImportedRowsStorageKey);
+
+  // The original Strong-only key may contain a second full copy of the data.
+  // Remove it when the user deliberately imports a replacement file.
+  localStorage.removeItem(legacyImportedRowsStorageKey);
+
+  try {
+    localStorage.setItem(importedRowsStorageKey, compactImport);
+  } catch (error) {
+    // A failed replacement should not silently erase the user's older import.
+    if (legacyImport !== null) {
+      try { localStorage.setItem(legacyImportedRowsStorageKey, legacyImport); } catch { /* Keep the original storage error. */ }
+    }
+
+    if (error?.name === "QuotaExceededError" || error?.code === 22) {
+      const sizeMb = (compactImport.length * 2 / 1024 / 1024).toFixed(1);
+      throw new Error(`This import is still too large for this browser's local storage (${sizeMb} MB after compression). Clear this site's saved data or import a shorter history.`);
+    }
+    throw error;
+  }
 }
 
 function loadImportedRows() {
   const savedRows = localStorage.getItem(importedRowsStorageKey) ?? localStorage.getItem(legacyImportedRowsStorageKey);
-  return savedRows ? JSON.parse(savedRows) : [];
+  return savedRows ? decodeImportedRows(JSON.parse(savedRows)) : [];
+}
+
+function encodeImportedRows(rows) {
+  const exercises = [];
+  const exerciseIndexes = new Map();
+  const sessions = [];
+  const sessionIndexes = new Map();
+
+  const compactRows = rows.map((row) => {
+    const exercise = row["Exercise Name"].trim();
+    if (!exerciseIndexes.has(exercise)) {
+      exerciseIndexes.set(exercise, exercises.length);
+      exercises.push(exercise);
+    }
+
+    const sessionKey = `${row["Workout #"]}\u0000${row.Date}`;
+    if (!sessionIndexes.has(sessionKey)) {
+      sessionIndexes.set(sessionKey, sessions.length);
+      sessions.push([String(row["Workout #"]), row.Date]);
+    }
+
+    return [
+      sessionIndexes.get(sessionKey),
+      exerciseIndexes.get(exercise),
+      compactNumericValue(row["Weight (kg)"]),
+      compactNumericValue(row.Reps),
+      compactNumericValue(row.RPE),
+    ];
+  });
+
+  return {
+    v: 2,
+    a: rows[0]?.["Source App"] ?? "",
+    e: exercises,
+    s: sessions,
+    r: compactRows,
+  };
+}
+
+function decodeImportedRows(savedImport) {
+  // Version 1 stored the complete row objects directly. Continue reading it so
+  // existing users do not lose their saved import after this update.
+  if (Array.isArray(savedImport)) return savedImport;
+
+  if (savedImport?.v !== 2 || !Array.isArray(savedImport.e) || !Array.isArray(savedImport.s) || !Array.isArray(savedImport.r)) {
+    return [];
+  }
+
+  return savedImport.r.map(([sessionIndex, exerciseIndex, weight, reps, rpe]) => {
+    const [workoutId = "", date = ""] = savedImport.s[sessionIndex] ?? [];
+    return {
+      "Workout #": String(workoutId),
+      Date: date,
+      "Exercise Name": savedImport.e[exerciseIndex] ?? "",
+      "Weight (kg)": expandStoredValue(weight),
+      Reps: expandStoredValue(reps),
+      RPE: expandStoredValue(rpe),
+      "Source App": savedImport.a ?? "",
+    };
+  });
+}
+
+function compactNumericValue(value) {
+  if (value === "" || value === undefined || value === null) return "";
+  const number = Number(value);
+  return Number.isFinite(number) ? number : String(value);
+}
+
+function expandStoredValue(value) {
+  return value === undefined || value === null ? "" : String(value);
 }

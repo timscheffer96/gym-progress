@@ -21,7 +21,9 @@ format selector is needed. Hevy rows are normalized to the same internal fields
 as Strong rows, and common equivalent exercise names are canonicalized so the
 existing muscle mappings remain useful. Explicit Hevy warm-up sets are excluded
 from hard-set volume. The file is parsed and stored only in the browser and is
-not uploaded. The page lists exercises that do not have an entry in
+not uploaded. Saved rows use a compact, versioned browser-storage format so
+larger histories fit within typical local-storage limits; older saved imports
+remain readable. The page lists exercises that do not have an entry in
 `exercise-muscles.js`.
 
 ## Hard-set volume

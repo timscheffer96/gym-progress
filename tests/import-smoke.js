@@ -5,7 +5,14 @@ const path = require("node:path");
 const vm = require("node:vm");
 
 const projectRoot = path.resolve(__dirname, "..");
-const sandbox = { localStorage: { getItem() { return null; }, setItem() {} } };
+const storedValues = new Map();
+const sandbox = {
+  localStorage: {
+    getItem(key) { return storedValues.get(key) ?? null; },
+    setItem(key, value) { storedValues.set(key, value); },
+    removeItem(key) { storedValues.delete(key); },
+  },
+};
 const source = fs.readFileSync(path.join(projectRoot, "data.js"), "utf8");
 
 const strongCsv = `"Workout #";"Date";"Workout Name";"Exercise Name";"Set Order";"Weight (kg)";"Reps"
@@ -27,6 +34,13 @@ vm.runInNewContext(`${source}
   if (hevyRows[0]["Weight (kg)"] !== "110" || hevyRows[0].Reps !== "5") throw new Error("Hevy lift fields failed.");
   if (hevyRows[1]["Exercise Name"] !== "Pec Deck (Machine)") throw new Error("Hevy exercise alias failed.");
   if (hevyRows[0]["Duration (sec)"] !== "3900") throw new Error("Hevy duration normalization failed.");
+  localStorage.setItem(legacyImportedRowsStorageKey, JSON.stringify(strongRows));
+  saveImportedRows(hevyRows);
+  if (localStorage.getItem(legacyImportedRowsStorageKey) !== null) throw new Error("Legacy storage was not cleaned up.");
+  const restoredRows = loadImportedRows();
+  if (restoredRows.length !== hevyRows.length) throw new Error("Compact storage row count failed.");
+  if (restoredRows[1]["Exercise Name"] !== hevyRows[1]["Exercise Name"]) throw new Error("Compact storage exercise failed.");
+  if (restoredRows[0].Date !== hevyRows[0].Date || restoredRows[0]["Weight (kg)"] !== "110") throw new Error("Compact storage values failed.");
 `, sandbox, { filename: "import-smoke.vm.js" });
 
 console.log(JSON.stringify({ formats: ["Strong", "Hevy"], hevyWorkingSets: 2 }));
