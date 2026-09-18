@@ -70,6 +70,11 @@ const assertions = `
   const expectedTotalVolumePoints = insightRules.opportunityVolumePoints * (insightRules.opportunityVolumeReviewAnchor - 0.5) / insightRules.opportunityVolumeReviewAnchor;
   if (Math.abs(indirectTriceps.volumePoints - expectedTotalVolumePoints) > 0.0001) throw new Error("Opportunity volume does not use weighted total sets.");
   if (smokeEfficiencies.some((item) => !Number.isFinite(item.score))) throw new Error("Efficiency contains a non-finite value.");
+  const plateauDates = ["2026-01-05", "2026-01-12", "2026-01-19", "2026-01-26", "2026-02-02", "2026-02-09"];
+  const risingRows = plateauDates.map((date, index) => ({ "Workout #": String(index + 1), Date: date + " 12:00:00", "Exercise Name": "Bench Press (Barbell)", "Weight (kg)": String(100 + index * 2), Reps: "5" }));
+  if (getPlateauSignals(risingRows).length !== 0) throw new Error("A clearly rising selected-period trend was labelled a plateau.");
+  const flatRows = plateauDates.map((date, index) => ({ "Workout #": String(index + 1), Date: date + " 12:00:00", "Exercise Name": "Bench Press (Barbell)", "Weight (kg)": "100", Reps: "5" }));
+  if (getPlateauSignals(flatRows).length !== 1) throw new Error("A flat selected-period trend was not labelled a plateau.");
   console.log(JSON.stringify({ rows: smokePeriodRows.length, completeWeeks: smokeWeeks.length, consistency: smokeConsistency.score, recovery: smokeRecovery.score, muscles: smokeMuscles.length, efficiencies: smokeEfficiencies.length, plateaus: smokePlateaus.length }));
 `;
 

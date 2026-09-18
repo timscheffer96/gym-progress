@@ -212,24 +212,38 @@ function getPlateauSignals(rows) {
   for (const [exercise, observations] of observationsByExercise) {
     const weekCount = new Set(observations.map((item) => getInsightWeekStart(item.date))).size;
     if (observations.length < insightRules.minimumPerformanceSessions || weekCount < insightRules.minimumPerformanceWeeks) continue;
-    const preceding = observations.slice(-6, -3);
-    const recent = observations.slice(-3);
-    if (preceding.length < 3 || recent.length < 3) continue;
-    const repDifference = Math.abs(median(preceding.map((item) => item.reps)) - median(recent.map((item) => item.reps)));
+    const first = observations.slice(0, 3);
+    const latest = observations.slice(-3);
+    const repDifference = Math.abs(median(first.map((item) => item.reps)) - median(latest.map((item) => item.reps)));
     if (repDifference > insightRules.comparableRepDifference) continue;
-    const precedingEstimate = median(preceding.map((item) => item.estimate));
-    const recentEstimate = median(recent.map((item) => item.estimate));
-    const changePercent = (recentEstimate - precedingEstimate) / precedingEstimate * 100;
-    if (Math.abs(changePercent) > insightRules.plateauTolerancePercent) continue;
+    const firstEstimate = median(first.map((item) => item.estimate));
+    const latestEstimate = median(latest.map((item) => item.estimate));
+    const changePercent = (latestEstimate - firstEstimate) / firstEstimate * 100;
+    const trendChangePercent = getRobustTrendChangePercent(observations);
+    if (Math.abs(changePercent) > insightRules.plateauTolerancePercent || Math.abs(trendChangePercent) > insightRules.plateauTolerancePercent) continue;
     const recentGap = Math.max(...observations.slice(-6).slice(1).map((item, index) => dateDifference(observations.slice(-6)[index].date, item.date)));
     const recentSix = observations.slice(-6);
     const sessionCounts = setCountsByExerciseAndSession.get(exercise);
     const precedingSets = average(recentSix.slice(0, 3).map((item) => sessionCounts.get(item.session) ?? 0));
     const recentSets = average(recentSix.slice(3).map((item) => sessionCounts.get(item.session) ?? 0));
     const setChange = precedingSets > 0 ? Math.abs(recentSets - precedingSets) / precedingSets * 100 : 0;
-    signals.push({ exercise, changePercent, sessions: observations.length, weeks: weekCount, downgraded: recentGap > insightRules.recoveryMaximumGapDays || setChange >= insightRules.plateauChangeDowngradePercent });
+    signals.push({ exercise, changePercent, trendChangePercent, sessions: observations.length, weeks: weekCount, downgraded: recentGap > insightRules.recoveryMaximumGapDays || setChange >= insightRules.plateauChangeDowngradePercent });
   }
   return signals.sort((a, b) => Math.abs(a.changePercent) - Math.abs(b.changePercent));
+}
+
+function getRobustTrendChangePercent(observations) {
+  if (observations.length < 2) return 0;
+  const periodDays = dateDifference(observations[0].date, observations.at(-1).date);
+  if (periodDays <= 0 || observations[0].estimate <= 0) return 0;
+  const slopes = [];
+  for (let firstIndex = 0; firstIndex < observations.length - 1; firstIndex += 1) {
+    for (let secondIndex = firstIndex + 1; secondIndex < observations.length; secondIndex += 1) {
+      const days = dateDifference(observations[firstIndex].date, observations[secondIndex].date);
+      if (days > 0) slopes.push((observations[secondIndex].estimate - observations[firstIndex].estimate) / days);
+    }
+  }
+  return slopes.length === 0 ? 0 : median(slopes) * periodDays / observations[0].estimate * 100;
 }
 
 function getExerciseSessionObservations(rows) {
@@ -399,7 +413,7 @@ function renderPlateaus(plateaus, period) {
     const explanation = document.createElement("p");
     icon.textContent = "△";
     heading.textContent = `${plateau.downgraded ? "Watch" : "Possible plateau"}: ${plateau.exercise}`;
-    explanation.textContent = `${formatSignedInsight(plateau.changePercent)}% recent median e1RM change across ${plateau.sessions} sessions.${plateau.downgraded ? " A longer gap or a recent set-count change weakens the comparison." : ""}`;
+    explanation.textContent = `${formatSignedInsight(plateau.changePercent)}% first-to-latest median e1RM change; ${formatSignedInsight(plateau.trendChangePercent)}% robust trend change across ${plateau.sessions} sessions.${plateau.downgraded ? " A longer gap or a recent set-count change weakens the comparison." : ""}`;
     copy.append(heading, explanation);
     item.append(icon, copy);
     container.append(item);

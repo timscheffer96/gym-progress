@@ -111,30 +111,22 @@ function getLiftSignals(rows) {
     const window = Math.min(3, Math.floor(sessions.length / 2));
     const early = sessions.slice(0, window);
     const recent = sessions.slice(-window);
-    const preceding = sessions.slice(-window * 2, -window);
     const earlyEstimate = median(early.map((session) => session.estimate));
     const recentEstimate = median(recent.map((session) => session.estimate));
-    const precedingEstimate = median(preceding.map((session) => session.estimate));
     const earlyReps = median(early.map((session) => session.reps));
     const recentReps = median(recent.map((session) => session.reps));
-    const precedingReps = median(preceding.map((session) => session.reps));
     const earlyWeight = median(early.map((session) => session.weight));
     const recentWeight = median(recent.map((session) => session.weight));
-    const precedingWeight = median(preceding.map((session) => session.weight));
     const comparable = Math.abs(recentReps - earlyReps) <= coachRules.comparableRepDifference;
-    const recentComparable = Math.abs(recentReps - precedingReps) <= coachRules.comparableRepDifference;
     const progressionPercent = earlyEstimate > 0 ? (recentEstimate - earlyEstimate) / earlyEstimate * 100 : 0;
-    const recentChangePercent = precedingEstimate > 0 ? (recentEstimate - precedingEstimate) / precedingEstimate * 100 : 0;
     const improvedReps = recentReps >= earlyReps + coachRules.meaningfulRepIncrease && Math.abs(recentWeight - earlyWeight) / earlyWeight * 100 <= coachRules.meaningfulLoadIncreasePercent;
     const improvedLoad = recentWeight >= earlyWeight * (1 + coachRules.meaningfulLoadIncreasePercent / 100) && comparable;
-    const recentImprovedReps = recentReps >= precedingReps + coachRules.meaningfulRepIncrease && Math.abs(recentWeight - precedingWeight) / precedingWeight * 100 <= coachRules.meaningfulLoadIncreasePercent;
-    const recentImprovedLoad = recentWeight >= precedingWeight * (1 + coachRules.meaningfulLoadIncreasePercent / 100) && recentComparable;
     const enoughData = sessions.length >= coachRules.minimumSessionsForLiftSignal && weeks.size >= coachRules.minimumWeeksForLiftSignal;
     return {
       exercise, sessions, weeks: weeks.size, earlyEstimate, recentEstimate, earlyReps, recentReps, earlyWeight, recentWeight, progressionPercent,
-      recentChangePercent, comparable, recentComparable, enoughData,
+      comparable, enoughData,
       progressing: enoughData && comparable && (progressionPercent >= coachRules.progressionPercent || improvedReps || improvedLoad),
-      possiblePlateau: enoughData && comparable && recentComparable && Math.abs(recentChangePercent) <= coachRules.plateauPercent && !recentImprovedReps && !recentImprovedLoad,
+      possiblePlateau: enoughData && comparable && Math.abs(progressionPercent) <= coachRules.plateauPercent,
     };
   });
 }
@@ -188,14 +180,14 @@ function getPositiveInsights(frequency, lifts, period) {
 function getOpportunityInsights(frequency, lifts, volumeComparison, period) {
   const insights = [];
   const relatedMuscles = new Set();
-  const plateaus = lifts.filter((lift) => lift.possiblePlateau).sort((first, second) => Math.abs(first.recentChangePercent) - Math.abs(second.recentChangePercent));
+  const plateaus = lifts.filter((lift) => lift.possiblePlateau).sort((first, second) => Math.abs(first.progressionPercent) - Math.abs(second.progressionPercent));
   const frequencyReduced = frequency.hasComparableBlocks && frequency.earlierRate > 0 && frequency.recentRate < frequency.earlierRate * (1 - coachRules.frequencyReductionPercent / 100);
 
   if (frequencyReduced) {
     const plateau = plateaus[0];
     insights.push(createInsight({
       headline: plateau ? "Restore a manageable training rhythm before changing volume" : "Logged training frequency has recently reduced",
-      numbers: `Logged frequency changed from ${frequency.earlierRate.toFixed(1)} to ${frequency.recentRate.toFixed(1)} sessions per week across two comparable 4-week blocks.${plateau ? ` ${plateau.exercise} also showed little recent estimated-1RM change (${formatSigned(plateau.recentChangePercent)}%).` : ""}`,
+      numbers: `Logged frequency changed from ${frequency.earlierRate.toFixed(1)} to ${frequency.recentRate.toFixed(1)} sessions per week across two comparable 4-week blocks.${plateau ? ` ${plateau.exercise} also showed little selected-period estimated-1RM change (${formatSigned(plateau.progressionPercent)}%).` : ""}`,
       why: "A change in logged exposure makes it difficult to judge whether a flat performance trend reflects the lift, the routine, or both.",
       next: "First review whether the recent logged frequency reflects your current plan. If you want to change it, try one manageable adjustment before adding more sets.",
       confidence: getConfidence(8, frequency.totalSessions),
@@ -213,11 +205,11 @@ function getOpportunityInsights(frequency, lifts, volumeComparison, period) {
     const volumePhrase = volumeContext ? ` Direct ${volumeContext.muscle} volume changed from ${volumeContext.earlier.toFixed(1)} to ${volumeContext.recent.toFixed(1)} sets per week (${formatSigned(volumeContext.percent)}%).` : "";
     insights.push(createInsight({
       headline: `Possible plateau on ${lift.exercise}`,
-      numbers: `Across ${lift.sessions.length} sessions in ${lift.weeks} weeks, median recent estimated 1RM changed ${formatSigned(lift.recentChangePercent)}% versus the preceding comparable observations. Median load and reps moved from ${lift.earlyWeight.toFixed(1)} kg × ${lift.earlyReps.toFixed(1)} to ${lift.recentWeight.toFixed(1)} kg × ${lift.recentReps.toFixed(1)} reps across the review.${volumePhrase}`,
-      why: "Performance was checked through load, reps, and estimated 1RM across repeated sessions. This is a possible plateau, not a confirmed diagnosis.",
+      numbers: `Across ${lift.sessions.length} sessions in ${lift.weeks} weeks, median estimated 1RM changed ${formatSigned(lift.progressionPercent)}% from the first to the latest comparable observations. Median load and reps moved from ${lift.earlyWeight.toFixed(1)} kg × ${lift.earlyReps.toFixed(1)} to ${lift.recentWeight.toFixed(1)} kg × ${lift.recentReps.toFixed(1)} reps across the review.${volumePhrase}`,
+      why: "Performance was checked from the beginning to the latest comparable observations through load, reps, and estimated 1RM. This is a possible plateau, not a confirmed diagnosis.",
       next: volumeContext && volumeContext.percent >= coachRules.volumeChangePercent ? "Review whether the extra sets are helping. Keep frequency steady and change only one small variable for a few weeks before judging the result." : "Keep logging comparable sessions. If you experiment, change one small training variable at a time rather than assuming more volume is the answer.",
       confidence: getConfidence(lift.weeks, lift.sessions.length),
-      evidence: `Requires at least ${coachRules.minimumSessionsForLiftSignal} sessions spread over ${coachRules.minimumWeeksForLiftSignal} weeks, with median reps within ${coachRules.comparableRepDifference}.`,
+      evidence: `Requires at least ${coachRules.minimumSessionsForLiftSignal} sessions spread over ${coachRules.minimumWeeksForLiftSignal} weeks, with first-to-latest median reps within ${coachRules.comparableRepDifference}.`,
       link: getTrendLink(lift.exercise, period),
       linkText: "Open Lift trends",
       priority: true,

@@ -143,20 +143,47 @@ visible tuning parameter, to be evaluated using observed score distributions.
 “Does this exercise have enough stable, comparable evidence of stalled
 performance to warrant review?” A plateau is a pattern, not a diagnosis.
 
-### Status rules
+### Calculation and status rules
+
+Plateau is primarily a **selected-period** question. Use the median estimated
+1RM of the first three comparable sessions as the baseline and the median of
+the last three comparable sessions as the latest result:
+
+```
+selectedPeriodChangePct = 100 * (latestMedian / baselineMedian - 1)
+```
+
+Small endpoint groups protect the result from one unusually good or poor
+session while still answering the intuitive question: “Have I made progress
+from the beginning of this period to now?” The displayed lift trend is a
+cross-check: a visibly upward trend must not be labelled a plateau merely
+because two adjacent short blocks happen to have the same median.
 
 - **Insufficient comparable data:** shared performance gate not met.
-- **No plateau signal:** recent comparison shows meaningful movement.
-- **Watch:** limited movement but evidence is not yet sufficient for a stronger
-  signal.
-- **Likely plateau:** the median estimated 1RM of the most recent three
-  comparable sessions is within +/-1.5% of the preceding three, with at least
+- **No plateau signal:** selected-period change is greater than +1.5%, or the
+  fitted trend across comparable observations is clearly upward.
+- **Watch:** selected-period change is between -1.5% and +1.5%, but endpoint
+  or trend evidence is mixed.
+- **Likely plateau:** selected-period change is within +/-1.5% *and* the
+  fitted trend is effectively flat across the selected period, with at least
   six comparable sessions spread across six weeks.
+
+“Effectively flat” initially means that the trendline's predicted change from
+the first to last comparable session is also within +/-1.5%. A robust linear
+fit or Theil-Sen slope is preferable to ordinary least squares because one
+exceptional session should not control the result. The exact fit remains an
+implementation choice, but its predicted start-to-end change must be shown in
+the evidence.
 
 Suppress or downgrade a plateau signal when there was a long training gap,
 recent deload, a rep-range change, or at least a 25% relevant direct-volume or
 frequency change. These factors can explain a temporary result and make a
 stable comparison less meaningful.
+
+For example: “No plateau signal — session-best estimated 1RM rose 4.1% from
+the first to the latest comparable observations; the selected-period trend is
+upward.” This replaces wording such as “0% median recent change,” which only
+describes two adjacent short blocks and can contradict the visible trend.
 
 The next-step language depends on the other measures: high recovery plus low
 exposure can justify a single small experiment; low recovery supports holding
@@ -219,6 +246,9 @@ When changing a formula or threshold:
 - Because the app has no goal questionnaire, low exposure is described as a
   review opportunity and never as a deficit or automatic reason to add volume.
 - Validate Epley-estimate behavior at the rep ranges commonly logged by users.
+- The Insights plateau cross-check uses the Theil-Sen median pairwise slope,
+  expressed as predicted first-to-last percentage change. Revisit it with
+  representative exports before treating it as a permanent choice.
 - Establish a changelog section below when the first rule revision occurs.
 
 ## Change log
@@ -232,3 +262,10 @@ When changing a formula or threshold:
   sets explicitly marked as warm-ups from working-set measures.
 - 2026-09-18: Changed the Opportunity score's volume component from direct
   sets to weighted total sets (direct + half indirect).
+- 2026-09-18: Changed plateau detection from adjacent recent-block comparison
+  to selected-period start-to-latest comparison, with a robust trend
+  cross-check. A rising trend can have two adjacent medians that are equal, so
+  plateau language must not mislabel that situation as flat.
+- 2026-09-18: Implemented the revised plateau rule on Insights and Coach. The
+  Insights cross-check uses a Theil-Sen median pairwise slope; Coach now
+  describes its first-to-latest comparison instead of a recent-block result.
