@@ -42,14 +42,14 @@
         <div class="info-grid">
           <article class="info-card">
             <h3>Logged set</h3>
-            <p>Each imported Strong set is treated as one hard set. The app assumes it was performed close enough to failure to count.</p>
+            <p>Each imported working set is treated as one hard set. The app assumes it was performed close enough to failure to count. Sets explicitly marked as warm-ups by Hevy are excluded.</p>
             <div class="info-formula">Volume = number of logged sets</div>
             <p>The Insights headline “Total volume” is this whole-program logged-set count. Muscle-group total volume is the separate weighted measure explained below.</p>
             <p class="info-limit">Weight × reps, sometimes called tonnage, is deliberately not used as the volume measure.</p>
           </article>
           <article class="info-card">
             <h3>Training session</h3>
-            <p>A session is a unique combination of the Strong workout identifier and date. Multiple exercises and sets in one workout still count as one session.</p>
+            <p>A session is a unique combination of the imported workout identifier and date. Multiple exercises and sets in one workout still count as one session.</p>
             <div class="info-formula">Session key = date + workout number</div>
           </article>
           <article class="info-card">
@@ -164,7 +164,7 @@
             <p>For adjacent session-best observations of the same exercise, the current e1RM is considered maintained when it is no more than <span data-info-rule="recoveryTolerance"></span>% below the prior estimate.</p>
             <div class="info-formula">Successful repeat = current e1RM ≥ (1 − <span data-info-rule="recoveryToleranceDecimal"></span>) × prior e1RM<br />score = successful comparable repeats ÷ all comparable repeats × 100</div>
             <dl><dt>Minimum evidence</dt><dd><span data-info-rule="recoveryPairs"></span> comparable pairs.</dd><dt>Gap limit</dt><dd>Pairs more than <span data-info-rule="recoveryGap"></span> days apart are excluded.</dd></dl>
-            <p class="info-warning">This is not physiological recovery. The Strong export does not establish sleep, nutrition, stress, soreness, fatigue, injury, or readiness to train.</p>
+            <p class="info-warning">This is not physiological recovery. A Strong or Hevy export does not establish sleep, nutrition, stress, soreness, fatigue, injury, or readiness to train.</p>
           </div>
         </details>
 

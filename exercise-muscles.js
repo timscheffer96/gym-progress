@@ -1,8 +1,8 @@
 "use strict";
 
-// Strong exercise name -> the muscles that receive training stimulus.
+// Imported exercise name -> the muscles that receive training stimulus.
 // The importer will trim exercise names before looking them up, so a small
-// spelling difference in Strong will not be confused with leading/trailing spaces.
+// spelling difference will not be confused with leading/trailing spaces.
 // These are sensible defaults, not medical facts: edit them to match how you train.
 //
 // Volume in this project means hard-set count, not weight x reps (tonnage).

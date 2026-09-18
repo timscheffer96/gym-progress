@@ -1,6 +1,6 @@
 # Gym Progress
 
-A beginner-friendly workout tracker built step by step with HTML, CSS, and JavaScript.
+A beginner-friendly workout analysis app built step by step with HTML, CSS, and JavaScript.
 
 ## Run it locally
 
@@ -8,16 +8,20 @@ Open `index.html` in a web browser.
 
 ## Current milestone
 
-The app will import a Strong CSV export and analyse the logged sets. The
+The app imports Strong and Hevy CSV exports and analyses the logged sets. The
 `exercise-muscles.js` file maps each exercise name in the supplied export to
-its primary and secondary muscle groups. We will use this mapping when we add
-the CSV importer.
+its primary and secondary muscle groups. The importer uses this mapping for all
+muscle-group calculations.
 
-## Importing a Strong export
+## Importing a Strong or Hevy export
 
-Open `index.html`, select a Strong CSV, and inspect the import summary. The
-file is parsed in the browser only; this first version does not upload or save
-the data. The page lists exercises that do not have an entry in
+Open `index.html`, select the original CSV export from either app, and inspect
+the import summary. The delimiter and headers are detected automatically; no
+format selector is needed. Hevy rows are normalized to the same internal fields
+as Strong rows, and common equivalent exercise names are canonicalized so the
+existing muscle mappings remain useful. Explicit Hevy warm-up sets are excluded
+from hard-set volume. The file is parsed and stored only in the browser and is
+not uploaded. The page lists exercises that do not have an entry in
 `exercise-muscles.js`.
 
 ## Hard-set volume
@@ -29,7 +33,7 @@ are separate measures, not pieces of one whole-body total.
 
 ## Estimated 1RM trends
 
-The separate `trends.html` page lets you select any imported Strong exercise
+The separate `trends.html` page lets you select any imported exercise
 and choose the start and end dates for its trend period. It displays lift-workout
 frequency and direct hard-set volume for the selected lift's mapped primary and
 secondary muscles. The chart uses the highest Epley estimate in each week,
@@ -111,7 +115,8 @@ changes, update all of the following in the same commit:
 
 In this app, **volume** means the number of logged hard sets. We assume that
 every imported working set was performed sufficiently close to failure to
-count. We do not use weight multiplied by reps (tonnage) as the volume metric.
+count. Sets explicitly marked as warm-ups by Hevy are excluded. We do not use
+weight multiplied by reps (tonnage) as the volume metric.
 
 A set counts as one direct set for each primary muscle listed for its exercise.
 For example, one barbell bench-press set counts as one chest set. Secondary

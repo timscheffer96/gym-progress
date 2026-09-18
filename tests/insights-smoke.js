@@ -5,8 +5,9 @@ const path = require("node:path");
 const vm = require("node:vm");
 
 const projectRoot = path.resolve(__dirname, "..");
-const csvName = fs.readdirSync(projectRoot).find((name) => name.toLowerCase().endsWith(".csv"));
-if (!csvName) throw new Error("No ignored Strong CSV is available for the Insights smoke test.");
+const defaultCsvName = fs.readdirSync(projectRoot).find((name) => name.toLowerCase().endsWith(".csv"));
+const csvPath = process.argv[2] ? path.resolve(process.argv[2]) : defaultCsvName && path.join(projectRoot, defaultCsvName);
+if (!csvPath) throw new Error("No workout CSV is available for the Insights smoke test.");
 
 const dummyElement = () => ({
   hidden: true,
@@ -34,7 +35,7 @@ const sandbox = {
     createElementNS() { return dummyElement(); },
   },
   window: { location: { href: "file:///insights.html" } },
-  __csvText: fs.readFileSync(path.join(projectRoot, csvName), "utf8"),
+  __csvText: fs.readFileSync(csvPath, "utf8"),
 };
 
 const sources = ["data.js", "exercise-muscles.js", "insights-rules.js", "insights.js"]
@@ -42,7 +43,7 @@ const sources = ["data.js", "exercise-muscles.js", "insights-rules.js", "insight
   .join("\n");
 
 const assertions = `
-  const smokeRows = parseStrongCsv(__csvText);
+  const smokeRows = parseWorkoutCsv(__csvText);
   const smokeDates = smokeRows.map((row) => row.Date.slice(0, 10)).sort();
   const smokeEnd = smokeDates.at(-1);
   const smokeStart = [smokeDates[0], addInsightDays(smokeEnd, -83)].sort().at(-1);

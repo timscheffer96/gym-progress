@@ -9,13 +9,14 @@ evidence and confidence, rather than presented as a diagnosis or prescription.
 
 ## Data contract and shared safeguards
 
-The Strong import supplies a workout identifier, date, exercise name, set
-order, load, reps, and optionally RPE. `exercise-muscles.js` maps exercises to
-primary and secondary muscles.
+Strong and Hevy imports are normalized to the same workout identifier, date,
+exercise name, set order, load, reps, and optional RPE fields.
+`exercise-muscles.js` maps exercises to primary and secondary muscles.
 
-- A **working set** is one imported logged set. Volume is hard-set count, not
-  load multiplied by reps. Positive load and reps are required only for
-  estimated-1RM performance calculations.
+- A **working set** is one imported logged set, excluding sets that Hevy
+  explicitly marks as warm-ups. Volume is hard-set count, not load multiplied
+  by reps. Positive load and reps are required only for estimated-1RM
+  performance calculations.
 - **Direct volume** counts sets for primary muscles only. Indirect sets remain
   useful context, but do not cause a low-direct-volume opportunity.
 - A **session-best performance observation** is an exercise's highest Epley
@@ -225,3 +226,5 @@ When changing a formula or threshold:
   weekly scores.
 - 2026-09-18: Added the user-facing Info page, with adjustable thresholds read
   directly from the centralized Insights and Coach rule files.
+- 2026-09-18: Added automatic Strong/Hevy import detection and excluded Hevy
+  sets explicitly marked as warm-ups from working-set measures.
