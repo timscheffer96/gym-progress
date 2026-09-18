@@ -67,6 +67,8 @@ select,.date-range input { width: min(100%,420px); padding: .72rem .78rem; color
 .insight-panel-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: .9rem; }
 .insight-panel-heading h2 { margin-bottom: 0; color: #edf4f0; }
 .insight-panel-heading>a { flex: 0 0 auto; font-size: .78rem; text-decoration: none; }
+.opportunity-select { display: grid; gap: .3rem; color: var(--muted); font-family: "DM Mono",monospace; font-size: .58rem; letter-spacing: .06em; text-transform: uppercase; }
+.opportunity-select select { width: 9.5rem; padding: .48rem .55rem; font-size: .72rem; text-transform: none; }
 .panel-kicker { margin-bottom: .25rem; color: var(--acid); font-family: "DM Mono",monospace; font-size: .61rem; letter-spacing: .1em; text-transform: uppercase; }
 .insight-legend { display: flex; flex-wrap: wrap; gap: .75rem; color: var(--muted); font-size: .75rem; }
 .insight-legend span { display: flex; align-items: center; gap: .35rem; }

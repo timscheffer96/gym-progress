@@ -7,8 +7,10 @@ const insightsEndDate = document.querySelector("#insights-end-date");
 const insightsPeriodStatus = document.querySelector("#insights-period-status");
 const insightsDataThrough = document.querySelector("#insights-data-through");
 const insightsPresetButtons = document.querySelectorAll("[data-period]");
+const opportunityMuscleSelect = document.querySelector("#opportunity-muscle-select");
 let insightsRows = [];
 let insightsPeriodPresets;
+let currentMuscleMeasures = [];
 
 initialiseInsights();
 
@@ -30,6 +32,7 @@ function initialiseInsights() {
   insightsStartDate.value = [earliestDate, addInsightDays(latestDate, -(insightRules.defaultPeriodDays - 1))].sort().at(-1);
   insightsStartDate.addEventListener("change", renderInsights);
   insightsEndDate.addEventListener("change", renderInsights);
+  opportunityMuscleSelect.addEventListener("change", renderSelectedOpportunity);
   insightsPeriodPresets = createPeriodPresetController({
     buttons: insightsPresetButtons,
     startInput: insightsStartDate,
@@ -69,7 +72,7 @@ function renderInsights() {
   insightsPeriodPresets?.updateButtonState();
   updateHeadlineCards(rows, previous, weekly, consistency, opportunities[0], recovery);
   renderWeeklyActivity(weekly);
-  renderOpportunity(opportunities[0]);
+  updateOpportunityMuscles(muscles, opportunities[0]);
   renderMuscleBars(muscles);
   renderEfficiency(efficiencies, period);
   renderPlateaus(plateaus, period);
@@ -251,7 +254,7 @@ function updateHeadlineCards(rows, previous, weekly, consistency, topOpportunity
   setText("#insight-volume-note", formatPeriodDelta(rows.length, previous?.length ?? null, "previous period"));
   setText("#insight-consistency", consistency.available ? `${Math.round(consistency.score)}%` : "—");
   setText("#insight-consistency-note", consistency.available ? `${consistency.mean.toFixed(1)} sessions/week · ±${consistency.deviation.toFixed(1)} typical variation` : `Needs ${insightRules.minimumCompleteWeeksForConsistency} complete weeks`);
-  setText("#insight-opportunity", topOpportunity ? `${Math.round(topOpportunity.opportunity)}/100` : "—");
+  setText("#insight-opportunity", topOpportunity ? `${Math.round(topOpportunity.opportunity)}%` : "—");
   setText("#insight-opportunity-note", topOpportunity ? `${capitalize(topOpportunity.muscle)} has the clearest review signal` : "Needs enough stability and complete-week data");
   setText("#insight-recovery", recovery.available ? `${Math.round(recovery.score)}%` : "—");
   setText("#insight-recovery-note", recovery.available ? `${recovery.successes} of ${recovery.comparisons} comparable repeats stayed within 2%` : `${recovery.comparisons}/${insightRules.recoveryMinimumComparablePairs} comparable repeats · not enough data`);
@@ -298,6 +301,32 @@ function renderOpportunity(opportunity) {
     ["Stability", opportunity.stabilityPoints, insightRules.opportunityStabilityPoints],
   ];
   for (const [label, value, maximum] of values) components.append(createScoreComponent(label, value, maximum));
+}
+
+function updateOpportunityMuscles(muscles, highestOpportunity) {
+  const previousSelection = opportunityMuscleSelect.value;
+  currentMuscleMeasures = [...muscles].sort((a, b) => a.muscle.localeCompare(b.muscle));
+  opportunityMuscleSelect.replaceChildren();
+  for (const measure of currentMuscleMeasures) {
+    const option = document.createElement("option");
+    option.value = measure.muscle;
+    option.textContent = capitalize(measure.muscle);
+    opportunityMuscleSelect.append(option);
+  }
+  const availableMuscles = currentMuscleMeasures.map((measure) => measure.muscle);
+  opportunityMuscleSelect.value = availableMuscles.includes(previousSelection)
+    ? previousSelection
+    : highestOpportunity?.muscle ?? availableMuscles[0] ?? "";
+  opportunityMuscleSelect.disabled = currentMuscleMeasures.length === 0;
+  renderSelectedOpportunity();
+}
+
+function renderSelectedOpportunity() {
+  const selected = currentMuscleMeasures.find((measure) => measure.muscle === opportunityMuscleSelect.value) ?? null;
+  renderOpportunity(selected?.opportunity === null ? null : selected);
+  if (selected && selected.opportunity === null) {
+    setText("#gauge-label", `${capitalize(selected.muscle)} · not enough stability data`);
+  }
 }
 
 function renderMuscleBars(muscles) {
