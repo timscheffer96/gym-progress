@@ -450,27 +450,40 @@ function createDualLineChart(weekly) {
   const svg = createInsightSvg("svg");
   const width = 800;
   const height = 250;
-  const padding = { top: 22, right: 24, bottom: 42, left: 42 };
+  const padding = { top: 22, right: 58, bottom: 42, left: 58 };
   const plotWidth = width - padding.left - padding.right;
   const plotHeight = height - padding.top - padding.bottom;
+  const sessionMaximum = Math.max(Math.ceil(Math.max(...weekly.map((item) => item.sessions))), 1);
+  const rawSetMaximum = Math.max(...weekly.map((item) => item.sets), 1);
+  const setMaximum = Math.max(Math.ceil(rawSetMaximum / 10) * 10, 10);
+  const series = [
+    { key: "sessions", color: "var(--cyan)", maximum: sessionMaximum, unit: "sessions/week" },
+    { key: "sets", color: "var(--violet)", maximum: setMaximum, unit: "sets/week" },
+  ];
   svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
   svg.setAttribute("role", "img");
   svg.setAttribute("aria-label", "Weekly training sessions and logged sets");
   for (let line = 0; line <= 4; line += 1) {
     const y = padding.top + line / 4 * plotHeight;
     appendInsightSvg(svg, "line", { x1: padding.left, x2: width - padding.right, y1: y, y2: y, class: "insight-grid-line" });
+    const leftLabel = appendInsightSvg(svg, "text", { x: padding.left - 9, y: y + 4, class: "insight-axis-label insight-axis-label-left", "text-anchor": "end" });
+    leftLabel.textContent = formatAxisTick(sessionMaximum * (1 - line / 4));
+    const rightLabel = appendInsightSvg(svg, "text", { x: width - padding.right + 9, y: y + 4, class: "insight-axis-label insight-axis-label-right", "text-anchor": "start" });
+    rightLabel.textContent = formatAxisTick(setMaximum * (1 - line / 4));
   }
-  const series = [
-    { key: "sessions", color: "var(--cyan)", maximum: Math.max(...weekly.map((item) => item.sessions), 1) },
-    { key: "sets", color: "var(--violet)", maximum: Math.max(...weekly.map((item) => item.sets), 1) },
-  ];
+  appendInsightSvg(svg, "line", { x1: padding.left, x2: padding.left, y1: padding.top, y2: height - padding.bottom, class: "insight-axis-line" });
+  appendInsightSvg(svg, "line", { x1: width - padding.right, x2: width - padding.right, y1: padding.top, y2: height - padding.bottom, class: "insight-axis-line" });
+  const leftTitle = appendInsightSvg(svg, "text", { x: 13, y: padding.top + plotHeight / 2, class: "insight-axis-title insight-axis-title-left", "text-anchor": "middle", transform: `rotate(-90 13 ${padding.top + plotHeight / 2})` });
+  leftTitle.textContent = "Sessions / week";
+  const rightTitle = appendInsightSvg(svg, "text", { x: width - 13, y: padding.top + plotHeight / 2, class: "insight-axis-title insight-axis-title-right", "text-anchor": "middle", transform: `rotate(90 ${width - 13} ${padding.top + plotHeight / 2})` });
+  rightTitle.textContent = "Sets / week";
   for (const line of series) {
     const coordinates = weekly.map((item, index) => ({ item, x: padding.left + index / Math.max(weekly.length - 1, 1) * plotWidth, y: padding.top + (1 - item[line.key] / line.maximum) * plotHeight }));
     appendInsightSvg(svg, "polyline", { points: coordinates.map(({ x, y }) => `${x},${y}`).join(" "), fill: "none", stroke: line.color, "stroke-width": 3, "stroke-linecap": "round", "stroke-linejoin": "round" });
     for (const point of coordinates) {
       const circle = appendInsightSvg(svg, "circle", { cx: point.x, cy: point.y, r: 4, fill: line.color, tabindex: 0 });
       const title = createInsightSvg("title");
-      title.textContent = `Week beginning ${point.item.week}: ${point.item[line.key]} ${line.key}`;
+      title.textContent = `Week beginning ${point.item.week}: ${point.item[line.key]} ${line.unit}`;
       circle.append(title);
     }
   }
@@ -538,6 +551,7 @@ function median(values) { const sorted = [...values].sort((a, b) => a - b); cons
 function clamp(value, minimum, maximum) { return Math.min(Math.max(value, minimum), maximum); }
 function capitalize(value) { return value ? value[0].toUpperCase() + value.slice(1) : value; }
 function formatSignedInsight(value) { return `${value >= 0 ? "+" : ""}${value.toFixed(1)}`; }
+function formatAxisTick(value) { return Number.isInteger(value) ? String(value) : value.toFixed(1); }
 function formatInsightWeeks(days) { return `${(days / 7).toFixed(1)} weeks`; }
 function formatInsightDate(value) { return new Intl.DateTimeFormat("en", { day: "numeric", month: "short", year: "numeric" }).format(new Date(`${value}T12:00:00`)); }
 function setText(selector, text) { document.querySelector(selector).textContent = text; }
