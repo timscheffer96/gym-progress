@@ -86,6 +86,15 @@ recovery, fatigue, injury, or a universal required volume target from the log.
 All review thresholds, sample-size requirements, and confidence cut-offs are
 centralized in `coach-rules.js` so they can be reviewed and adjusted later.
 
+## Actionable insight measures
+
+The rationale and first-version formulas for the implemented Efficiency,
+Opportunity, Consistency, Plateau, and Performance-stability recovery-proxy
+measures are recorded in [docs/insight-measures.md](docs/insight-measures.md).
+The `insights.html` page presents these measures in a compact dashboard. Its
+assumptions and thresholds remain documented and centralized so they can be
+reviewed as the product evolves.
+
 ## Metric definitions
 
 In this app, **volume** means the number of logged hard sets. We assume that

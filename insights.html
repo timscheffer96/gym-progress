@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Insights · Gym Progress</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="app insights-page">
+      <header>
+        <nav class="site-nav" aria-label="Main navigation">
+          <a href="index.html">Dashboard</a>
+          <a href="insights.html" aria-current="page">Insights</a>
+          <a href="trends.html">Lift trends</a>
+          <a href="volume.html">Volume</a>
+          <a href="coach.html">Coach</a>
+        </nav>
+        <p class="eyebrow">Strong workout analysis</p>
+        <div class="insights-heading-row">
+          <div>
+            <h1>Insights</h1>
+            <p class="intro">A compact view of training exposure, regularity, performance response, and signals worth reviewing.</p>
+          </div>
+          <p id="insights-data-through" class="insights-data-through"></p>
+        </div>
+      </header>
+
+      <section id="insights-no-import" class="upload-panel" hidden>
+        <h2>Import needed</h2>
+        <p class="status">Return to the <a href="index.html">Dashboard</a> and import a Strong CSV first. Your data stays in this browser.</p>
+      </section>
+
+      <section id="insights-content" hidden>
+        <div class="insights-period-bar">
+          <div class="date-range" aria-label="Insights period">
+            <label for="insights-start-date">From <input id="insights-start-date" type="date" /></label>
+            <label for="insights-end-date">To <input id="insights-end-date" type="date" /></label>
+          </div>
+          <div class="period-presets" aria-label="Quick period selection">
+            <button type="button" data-period="4-weeks">Last 4 weeks</button>
+            <button type="button" data-period="12-weeks">Last 12 weeks</button>
+            <button type="button" data-period="6-months">Last 6 months</button>
+            <button type="button" data-period="1-year">Last year</button>
+            <button type="button" data-period="all-time">All time</button>
+          </div>
+          <p id="insights-period-status" class="status"></p>
+        </div>
+
+        <section class="insight-kpi-grid" aria-label="Headline insights">
+          <article class="insight-kpi insight-kpi-cyan">
+            <div class="insight-kpi-label"><span class="insight-icon">▦</span><span>Training sessions</span></div>
+            <strong id="insight-sessions">—</strong>
+            <p id="insight-sessions-note">—</p>
+            <div id="sessions-sparkline" class="insight-sparkline" aria-hidden="true"></div>
+          </article>
+          <article class="insight-kpi insight-kpi-violet">
+            <div class="insight-kpi-label"><span class="insight-icon">≋</span><span>Total volume</span></div>
+            <strong id="insight-volume">—</strong>
+            <p id="insight-volume-note">Logged hard sets</p>
+            <div id="volume-sparkline" class="insight-sparkline" aria-hidden="true"></div>
+          </article>
+          <article class="insight-kpi insight-kpi-acid">
+            <div class="insight-kpi-label"><span class="insight-icon">◎</span><span>Consistency score</span></div>
+            <strong id="insight-consistency">—</strong>
+            <p id="insight-consistency-note">—</p>
+            <div id="consistency-sparkline" class="insight-sparkline" aria-hidden="true"></div>
+          </article>
+          <article class="insight-kpi insight-kpi-warning">
+            <div class="insight-kpi-label"><span class="insight-icon">↗</span><span>Opportunity score</span></div>
+            <strong id="insight-opportunity">—</strong>
+            <p id="insight-opportunity-note">—</p>
+            <div id="opportunity-sparkline" class="insight-sparkline" aria-hidden="true"></div>
+          </article>
+          <article class="insight-kpi insight-kpi-rose">
+            <div class="insight-kpi-label"><span class="insight-icon">♡</span><span>Recovery proxy</span></div>
+            <strong id="insight-recovery">—</strong>
+            <p id="insight-recovery-note">Performance stability only</p>
+            <div id="recovery-sparkline" class="insight-sparkline" aria-hidden="true"></div>
+          </article>
+        </section>
+
+        <div class="insights-dashboard-grid">
+          <section class="insight-panel insight-panel-wide" aria-labelledby="weekly-activity-title">
+            <div class="insight-panel-heading">
+              <div><p class="panel-kicker">Training pattern</p><h2 id="weekly-activity-title">Weekly activity</h2></div>
+              <div class="insight-legend"><span><i class="legend-sessions"></i>Sessions</span><span><i class="legend-sets"></i>Sets</span></div>
+            </div>
+            <div id="weekly-activity-chart" class="insights-chart"></div>
+            <p id="weekly-activity-note" class="table-note"></p>
+          </section>
+
+          <section class="insight-panel" aria-labelledby="opportunity-title">
+            <div class="insight-panel-heading"><div><p class="panel-kicker">Review priority</p><h2 id="opportunity-title">Opportunity score</h2></div></div>
+            <div id="opportunity-gauge" class="opportunity-gauge" role="img" aria-label="Opportunity score unavailable">
+              <div><strong id="gauge-score">—</strong><span>/100</span></div>
+            </div>
+            <p id="gauge-label" class="gauge-label">Not enough data</p>
+            <div id="opportunity-components" class="score-components"></div>
+            <p class="insight-caveat">A higher score means “review this setup,” not “add more volume.”</p>
+          </section>
+
+          <section class="insight-panel" aria-labelledby="muscle-volume-title">
+            <div class="insight-panel-heading"><div><p class="panel-kicker">Exposure</p><h2 id="muscle-volume-title">Muscle volume</h2></div><a id="volume-detail-link" href="volume.html">Open Volume</a></div>
+            <p class="table-note">Average weighted total sets/week: direct sets + half of indirect sets.</p>
+            <div id="muscle-volume-bars" class="metric-bars"></div>
+          </section>
+
+          <section class="insight-panel insight-panel-wide" aria-labelledby="efficiency-title">
+            <div class="insight-panel-heading"><div><p class="panel-kicker">Performance response</p><h2 id="efficiency-title">Exercise efficiency</h2></div><a id="trends-detail-link" href="trends.html">Open Lift trends</a></div>
+            <p class="table-note">Estimated-1RM change relative to the exercise sets logged. This is an observation, not a judgement of program quality.</p>
+            <div id="efficiency-list" class="efficiency-list"></div>
+          </section>
+
+          <section class="insight-panel" aria-labelledby="plateau-title">
+            <div class="insight-panel-heading"><div><p class="panel-kicker">Performance check</p><h2 id="plateau-title">Possible plateaus</h2></div></div>
+            <div id="plateau-list" class="plateau-list"></div>
+          </section>
+
+          <section class="insight-panel" aria-labelledby="weekly-summary-title">
+            <div class="insight-panel-heading"><div><p class="panel-kicker">Latest complete week</p><h2 id="weekly-summary-title">Weekly summary</h2></div></div>
+            <div id="latest-week-summary" class="weekly-summary"></div>
+          </section>
+
+          <section class="insight-panel insight-panel-full" aria-labelledby="coverage-title">
+            <div class="insight-panel-heading"><div><p class="panel-kicker">Transparency</p><h2 id="coverage-title">How to read these measures</h2></div></div>
+            <div id="insight-coverage" class="coverage-grid"></div>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <script src="data.js"></script>
+    <script src="period-presets.js"></script>
+    <script src="exercise-muscles.js"></script>
+    <script src="insights-rules.js"></script>
+    <script src="insights.js"></script>
+  </body>
+</html>
