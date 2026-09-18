@@ -10,7 +10,7 @@
     <main class="app info-page">
       <header>
         <nav class="site-nav" aria-label="Main navigation">
-          <a href="index.html">Dashboard</a>
+          <a href="index.html">Import</a>
           <a href="insights.html">Insights</a>
           <a href="trends.html">Lift trends</a>
           <a href="volume.html">Volume</a>
@@ -150,11 +150,11 @@
           <div class="info-measure-content">
             <p>This score asks whether a muscle group’s current setup contains a clear reason to review it. A high score does not automatically mean “add volume.” A numeric score is withheld until the stability component has enough comparable performance evidence.</p>
             <div class="info-score-parts">
-              <article><strong>Up to <span data-info-rule="volumePoints"></span> points</strong><span>Direct-volume gap</span><code><span data-info-rule="volumePoints"></span> × clamp((<span data-info-rule="volumeAnchor"></span> − direct sets/week) ÷ <span data-info-rule="volumeAnchor"></span>, 0, 1)</code></article>
+              <article><strong>Up to <span data-info-rule="volumePoints"></span> points</strong><span>Total-volume gap</span><code><span data-info-rule="volumePoints"></span> × clamp((<span data-info-rule="volumeAnchor"></span> − total sets/week) ÷ <span data-info-rule="volumeAnchor"></span>, 0, 1)</code></article>
               <article><strong>Up to <span data-info-rule="frequencyPoints"></span> points</strong><span>Direct-frequency gap</span><code><span data-info-rule="frequencyPoints"></span> × clamp((<span data-info-rule="frequencyAnchor"></span> − direct sessions/week) ÷ <span data-info-rule="frequencyAnchor"></span>, 0, 1)</code></article>
               <article><strong>Up to <span data-info-rule="stabilityPoints"></span> points</strong><span>Stability signal</span><code><span data-info-rule="stabilityPoints"></span> × clamp((<span data-info-rule="stabilityAnchor"></span> − recovery proxy) ÷ 40, 0, 1)</code></article>
             </div>
-            <p class="info-limit">The <span data-info-rule="volumeAnchor"></span>-set and <span data-info-rule="frequencyAnchor"></span>-session anchors are review triggers, not universal minimums. The small top tile shows the highest muscle score; the large tile lets you inspect each muscle.</p>
+            <p class="info-limit">Total sets use direct sets + half of indirect sets. The <span data-info-rule="volumeAnchor"></span>-set and <span data-info-rule="frequencyAnchor"></span>-session anchors are review triggers, not universal minimums. The small top tile shows the highest muscle score; the large tile lets you inspect each muscle.</p>
           </div>
         </details>
 

@@ -17,8 +17,9 @@ exercise name, set order, load, reps, and optional RPE fields.
   explicitly marks as warm-ups. Volume is hard-set count, not load multiplied
   by reps. Positive load and reps are required only for estimated-1RM
   performance calculations.
-- **Direct volume** counts sets for primary muscles only. Indirect sets remain
-  useful context, but do not cause a low-direct-volume opportunity.
+- **Direct volume** counts sets for primary muscles only. **Total volume**
+  counts direct sets plus half of indirect sets and supplies the Opportunity
+  score's volume component.
 - A **session-best performance observation** is an exercise's highest Epley
   estimated 1RM in one workout: `load * (1 + reps / 30)`.
 - Two observations are **comparable** when their median rep counts differ by
@@ -89,11 +90,12 @@ being translated into an unsafe volume recommendation.
 
 ### Calculation
 
-Use direct-set volume and direct-session frequency for the mapped muscle. Let
-`recovery` be the whole-program Performance-stability recovery proxy below.
+Use weighted total-set volume and direct-session frequency for the mapped
+muscle. Total volume is direct sets plus half of indirect sets. Let `recovery`
+be the whole-program Performance-stability recovery proxy below.
 
 ```
-volumeGap = 40 * clamp((5 - directSetsPerWeek) / 5, 0, 1)
+volumeGap = 40 * clamp((5 - totalSetsPerWeek) / 5, 0, 1)
 frequencyGap = 30 * clamp((2 - directSessionsPerWeek) / 2, 0, 1)
 stabilityFlag = 30 * clamp((80 - recovery) / 40, 0, 1)
 opportunity = volumeGap + frequencyGap + stabilityFlag
@@ -228,3 +230,5 @@ When changing a formula or threshold:
   directly from the centralized Insights and Coach rule files.
 - 2026-09-18: Added automatic Strong/Hevy import detection and excluded Hevy
   sets explicitly marked as warm-ups from working-set measures.
+- 2026-09-18: Changed the Opportunity score's volume component from direct
+  sets to weighted total sets (direct + half indirect).

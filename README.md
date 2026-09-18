@@ -28,7 +28,7 @@ remain readable. The page lists exercises that do not have an entry in
 
 ## Hard-set volume
 
-After importing, the dashboard counts one direct hard set for every primary
+After importing, the Import page counts one direct hard set for every primary
 muscle mapped to an exercise. A compound movement can therefore contribute one
 set to more than one muscle group. This is intentional: muscle-group totals
 are separate measures, not pieces of one whole-body total.
@@ -46,8 +46,8 @@ Muscle columns in the selected-period table show the average number of direct
 hard sets per week. Hovering or keyboard-focusing a chart point reveals the
 week and its calculated estimated 1RM.
 
-The imported rows are saved in this browser's local storage so the trends page
-and Dashboard can use them without another upload. They are not sent to a
+The imported rows are saved in this browser's local storage so the other pages
+and Import can use them without another upload. They are not sent to a
 server or committed to Git.
 
 ## Volume

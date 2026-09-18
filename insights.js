@@ -161,7 +161,7 @@ function getMuscleMeasures(rows, weeks, recovery) {
     const directPerWeek = value.direct / weeks;
     const totalPerWeek = (value.direct + value.indirect * 0.5) / weeks;
     const frequencyPerWeek = value.directSessions.size / weeks;
-    const volumePoints = insightRules.opportunityVolumePoints * clamp((insightRules.opportunityVolumeReviewAnchor - directPerWeek) / insightRules.opportunityVolumeReviewAnchor, 0, 1);
+    const volumePoints = insightRules.opportunityVolumePoints * clamp((insightRules.opportunityVolumeReviewAnchor - totalPerWeek) / insightRules.opportunityVolumeReviewAnchor, 0, 1);
     const frequencyPoints = insightRules.opportunityFrequencyPoints * clamp((insightRules.opportunityFrequencyReviewAnchor - frequencyPerWeek) / insightRules.opportunityFrequencyReviewAnchor, 0, 1);
     const stabilityPoints = recovery.available
       ? insightRules.opportunityStabilityPoints * clamp((insightRules.opportunityStabilityAnchor - recovery.score) / 40, 0, 1)
@@ -296,7 +296,7 @@ function renderOpportunity(opportunity) {
   setText("#gauge-score", score);
   setText("#gauge-label", `${capitalize(opportunity.muscle)} · ${score >= 60 ? "clear review signal" : score >= 35 ? "some review potential" : "limited review signal"}`);
   const values = [
-    ["Direct volume", opportunity.volumePoints, insightRules.opportunityVolumePoints],
+    ["Total volume", opportunity.volumePoints, insightRules.opportunityVolumePoints],
     ["Direct frequency", opportunity.frequencyPoints, insightRules.opportunityFrequencyPoints],
     ["Stability", opportunity.stabilityPoints, insightRules.opportunityStabilityPoints],
   ];

@@ -65,6 +65,10 @@ const assertions = `
   if (smokeRecovery.available && !Number.isFinite(smokeRecovery.score)) throw new Error("Recovery score is invalid.");
   if (smokeMuscles.some((muscle) => !Number.isFinite(muscle.totalPerWeek))) throw new Error("Muscle volume contains a non-finite value.");
   if (smokeOpportunities.some((muscle) => !Number.isFinite(muscle.opportunity))) throw new Error("Opportunity score is invalid.");
+  const indirectOnlyRows = [{ "Workout #": "1", Date: "2026-09-14 12:00:00", "Exercise Name": "Bench Press (Barbell)", "Weight (kg)": "100", Reps: "5" }];
+  const indirectTriceps = getMuscleMeasures(indirectOnlyRows, 1, { available: true, score: 80 }).find((muscle) => muscle.muscle === "triceps");
+  const expectedTotalVolumePoints = insightRules.opportunityVolumePoints * (insightRules.opportunityVolumeReviewAnchor - 0.5) / insightRules.opportunityVolumeReviewAnchor;
+  if (Math.abs(indirectTriceps.volumePoints - expectedTotalVolumePoints) > 0.0001) throw new Error("Opportunity volume does not use weighted total sets.");
   if (smokeEfficiencies.some((item) => !Number.isFinite(item.score))) throw new Error("Efficiency contains a non-finite value.");
   console.log(JSON.stringify({ rows: smokePeriodRows.length, completeWeeks: smokeWeeks.length, consistency: smokeConsistency.score, recovery: smokeRecovery.score, muscles: smokeMuscles.length, efficiencies: smokeEfficiencies.length, plateaus: smokePlateaus.length }));
 `;
